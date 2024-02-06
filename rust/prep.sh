@@ -49,6 +49,9 @@ multipass exec $MP_NAME -- sudo sh -c "apt update && DEBIAN_FRONTEND=noninteract
 multipass exec $MP_NAME -- sh -c ". ~/.mp/rustup.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp/usbip-drivers.sh"
 
+# Restarting *may* be good because of service updates
+multipass restart $MP_NAME
+
 # Even 'cargo --version' won't work unless stable|nightly is declared.
 multipass exec $MP_NAME -- sh -c ". .cargo/env && rustup default stable"
 
