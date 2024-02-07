@@ -49,6 +49,9 @@ multipass exec $MP_NAME -- sudo sh -c "apt update && DEBIAN_FRONTEND=noninteract
 multipass exec $MP_NAME -- sh -c ". ~/.mp/rustup.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp/usbip-drivers.sh"
 
+# We don't need the VM-side scripts any more.
+multipass umount $MP_NAME
+
 # Restarting *may* be good because of service updates
 multipass restart $MP_NAME
 
