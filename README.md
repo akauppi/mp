@@ -34,21 +34,21 @@ usbip (usbip-utils 2.0)
 
 ```
 
-After that:
+To add a project folder to be shared between the host (macOS) and the Linux side:
+
+```
+$ multipass mount -type native $(pwd) rust:/home/ubuntu/SOME
+
+$ multipass start rust
+```
+
+Then:
 
 ```
 $ multipass shell rust
 ```
 
 You are now in an Ubuntu sandbox.
-
-Map a working directory to the sandbox.
-
-```
-$ multipass mount $(pwd) rust:/home/ubuntu/Git/Something
-```
-
-After this, you'll see the same files on both the host (macOS) and Linux side.
 
 <!--
 >Hint: Change your Multipass terminal's look by (right click) > `Show Inspector`.
@@ -59,13 +59,48 @@ After this, you'll see the same files on both the host (macOS) and Linux side.
 To see how to share a USB device, see e.g. [`usbipd-win`]().
 
 ```
-$ sudo usbip attach -r 192.168.1.29 -b 3-1
+rust$ sudo usbip attach -r 192.168.1.29 -b 3-1
 ```
 ```
-$ lsusb
+rust$ lsusb
 Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
 Bus 001 Device 002: ID 1a86:55d4 QinHeng Electronics SONOFF Zigbee 3.0 USB Dongle Plus V2
 Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 ```
 
 >Note: Sharing like this, you'll always get a predictable device name in the Multipass VM. In this case, "Device 002" shows as `/dev/ttyACM0`.
+
+### Updating
+
+```
+rust$ rustup update
+...
+```
+
+### Troubleshooting
+
+**Kernel version has upgraded**
+
+```
+libusbip: error: udev_device_new_from_subsystem_sysname failed
+usbip: error: open vhci_driver
+```
+
+If you get this info, like `sudo apt upgrade` has increased your Linux kernel, and the `vhci-hcd` driver isn't available, any more.
+
+>```
+>$ sudo ls /lib/modules
+>5.15.0-92-generic  5.15.0-94-generic
+>```
+>
+>Likely set up as `5.15.0-92`. Updated to `..-94`.
+
+Rerun commands from `rust/linux/usbip-drivers.sh`:
+
+```
+$ sudo apt install -y linux-tools-generic linux-modules-extra-$(uname -r)
+[...]
+$ sudo modprobe vhci-hcd
+```
+
+The `usbip attach -r {IP} -b ...` should no work.
