@@ -1,31 +1,52 @@
-# mp-silt
+# mp
 
 Scripts for setting up [Multipass](https://multipass.run) virtual machines, in the way of WSL, but on macOS.
 
 **Why?**
 
-One can use containers (like Docker) for development, but Docker Desktop may feel too big a tool for daily use.
+World is a risky place. Sandboxing allows you to separate *business account* (emails etc.) from *developer account* (that pulls in stuff from third party sources on the Internet), without disturbing the workflow, too much.
 
-Because of security. Sandboxing allows you to separate *business account* (emails etc.) from *developer account* (that pulls in stuff from N sources on the Internet), without disturbing the workflow, too much.
+One can use containers for development, but Docker Desktop feels too big a tool for daily use, for this author.
 
 **Discipline**
 
 Sandboxing of course needs discipline. The `mp` approach is done so that:
 
-- tooling is separate from development repos
+1. Tooling is separate from development repos
 
    This is important so that your repos are not cluttered by toolchain choices. A repo would work "just fine" with native tooling, if someone so wishes.
 
+2. We want to support remote IDE's
+
+   However, this does require a beefier machine to run (more cores; more memory). You might opt for partially VM-based workflows, but it's still better than not starting the sandbox transition.
+
+**Alternatives**
+
+Fully cloud-based sandbox-as-a-service comes to mind. 
+
+- [Jetbrains Space](https://www.jetbrains.com/space/)
+- ..other vendors have similar
+
+This can be ideal for you, but this author prefers to have the *option* of locally hosted, offline-capable development.
+
+It's possible, by -say- 2026, that such remote development platforms become the norm. They certainly have many things going for them, in the same way as multiplayer games have.
+
+
 ## Sandboxes available
 
-- [`rust`](#Rust)
+- [`rust`](rust/README.md); stable
+- [`web`](web/README.md); WIP
 
 ## Usage
 
 ```
 $ rust/prep.sh
 [...]
+```
 
+>It works the same for `web/prep.sh`.
+
+```
 Multipass IP (rust): 192.168.64.74
 
 cargo 1.75.0 (1d8b05cdd 2023-11-20)
