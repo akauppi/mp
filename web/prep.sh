@@ -50,7 +50,8 @@ multipass exec $MP_NAME -- sudo sh -c "DEBIAN_FRONTEND=noninteractive; apt updat
   # NOTE: This may bring up 'Newer kernel available' dialog. How to prevent that?
 
 multipass exec $MP_NAME -- sh -c ". ~/.mp/node.sh"
-  #... can be multiple files
+multipass exec $MP_NAME -- sh -c ". ~/.mp/env.sh"
+multipass exec $MP_NAME -- sh -c ". ~/.mp/gitignore.sh"
 
 # We don't need the VM-side scripts any more.
 multipass umount $MP_NAME
