@@ -45,7 +45,7 @@ MP_PARAMS=${MP_PARAMS:---memory 4G --disk 5G --cpus 2}
 #
 multipass launch lts --name $MP_NAME $MP_PARAMS --mount ${MY_PATH}/linux:/home/ubuntu/.mp
 
-multipass exec $MP_NAME -- sudo sh -c "DEBIAN_FRONTEND=noninteractive; apt update && apt -y upgrade"
+multipass exec $MP_NAME -- sudo sh -c "DEBIAN_FRONTEND=noninteractive apt update && apt -y upgrade"
   #
   # NOTE: This may bring up 'Newer kernel available' dialog. How to prevent that?
 
@@ -54,9 +54,9 @@ multipass restart $MP_NAME
 
 # Note: Changes to '.bashrc' do not need to be loaded in. When the use makes 'multipass shell', they'll get them.
 #
-multipass exec $MP_NAME -- sh -c ". ~/.mp/node.sh"
-multipass exec $MP_NAME -- sh -c ". ~/.mp/env.sh"
-multipass exec $MP_NAME -- sh -c ". ~/.mp/gitignore.sh"
+multipass exec $MP_NAME -- sh -c "~/.mp/node.sh"
+multipass exec $MP_NAME -- sh -c "~/.mp/env.sh"
+multipass exec $MP_NAME -- sh -c "~/.mp/gitignore.sh"
 
 # We don't need the VM-side scripts any more.
 multipass umount $MP_NAME
