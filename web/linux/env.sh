@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-# Environment setup
+# Note. This didn't work, since '$0' is just "sh"
+#_ADD=$(dirname $0)/.bashrc.add
+_ADD=~/.mp/.bashrc.add
 
-# Directs Chokidar (that Vite uses) to detect changes; VM mounts don't support change notifications.
-export CHOKIDAR_USEPOLLING=1
+cat >> ~/.bashrc < ${_ADD}

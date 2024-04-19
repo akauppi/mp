@@ -49,16 +49,17 @@ multipass exec $MP_NAME -- sudo sh -c "DEBIAN_FRONTEND=noninteractive; apt updat
   #
   # NOTE: This may bring up 'Newer kernel available' dialog. How to prevent that?
 
+# Restarting *may* be good because of service updates (note: better to do before the application installs)
+multipass restart $MP_NAME
+
+# Note: Changes to '.bashrc' do not need to be loaded in. When the use makes 'multipass shell', they'll get them.
+#
 multipass exec $MP_NAME -- sh -c ". ~/.mp/node.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp/env.sh"
-multipass exec $MP_NAME -- sh -c ". ~/.mp/alias.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp/gitignore.sh"
 
 # We don't need the VM-side scripts any more.
 multipass umount $MP_NAME
-
-# Restarting *may* be good because of service updates
-multipass restart $MP_NAME
 
 echo ""
 echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
@@ -66,7 +67,7 @@ echo ""
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c "node --version && npm --version"
-  #v21.7.3
+  #v20.12.2
   #10.5.0
 
 echo ""
