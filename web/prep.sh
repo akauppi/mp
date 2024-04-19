@@ -51,6 +51,7 @@ multipass exec $MP_NAME -- sudo sh -c "DEBIAN_FRONTEND=noninteractive; apt updat
 
 multipass exec $MP_NAME -- sh -c ". ~/.mp/node.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp/env.sh"
+multipass exec $MP_NAME -- sh -c ". ~/.mp/alias.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp/gitignore.sh"
 
 # We don't need the VM-side scripts any more.
