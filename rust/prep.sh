@@ -2,13 +2,13 @@
 set -e
 
 #
+# Creates a Multipass VM, to be used for Rust development.
+#
 # Usage:
 #   $ [MP_NAME=xxx] [MP_PARAMS=...] rust/prep.sh
 #
 # Requires:
 #   - multipass
-#
-# Creates a Multipass VM, to be used for Rust development.
 #
 MY_PATH=$(dirname $0)
 

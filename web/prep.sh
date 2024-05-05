@@ -2,13 +2,13 @@
 set -e
 
 #
+# Creates a Multipass VM, to be used for Web development.
+#
 # Usage:
 #   $ [MP_NAME=xxx] [MP_PARAMS=...] web/prep.sh
 #
 # Requires:
 #   - multipass
-#
-# Creates a Multipass VM, to be used for Web development.
 #
 MY_PATH=$(dirname $0)
 

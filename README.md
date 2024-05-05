@@ -35,7 +35,24 @@ It's possible, by -say- 2026, that such remote development platforms become the 
 ## Sandboxes available
 
 - [`rust`](rust/README.md); stable
-- [`web`](web/README.md); WIP
+- [`web`](web/README.md); stable
+- [`web+cf`](web+cf/README.md)
+
+   The last is an example on how a VM definition can be derived from a more generic one.
+   In this case, adding Cloudflare CLI (`wrangler`), on top of generic web tools.
+
+## Requirements
+
+- Multipass 1.13.1 installed
+
+The system is intended to work on all macOS, Linux and Windows hosts, but is **only tested on macOS**. 
+
+>Note: For Windows, Pro versions are recommended since only they provide Hyper-V (native) virtualization.
+
+<!-- Developed with:
+- macOS 14.4
+- Multipass 1.13.1
+-->
 
 ## Usage
 

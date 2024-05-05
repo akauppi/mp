@@ -53,11 +53,11 @@ Cloud CLIs often use a browser dance.
 
    ```
    $ wrangler login
- ⛅️ wrangler 3.51.2
--------------------
-Attempting to login via OAuth...
-Opening a link in your default browser: https://dash.cloudflare.com/oauth2/auth?response_type=code&client_id=[...]&redirect_uri=http%3A%2F%2Flocalhost%3A8976[...]
-▲ [WARNING] Failed to open
+    ⛅️ wrangler 3.51.2
+   -------------------
+   Attempting to login via OAuth...
+   Opening a link in your default browser: https://dash.cloudflare.com/oauth2/auth?response_type=code&client_id=[...]&redirect_uri=http%3A%2F%2Flocalhost%3A8976[...]
+   ▲ [WARNING] Failed to open
    ```
 
    Pick the URL; copy-paste to a host browser.
@@ -70,7 +70,7 @@ Opening a link in your default browser: https://dash.cloudflare.com/oauth2/auth?
    ![](.images/wrangler-allowed.jpg)
 -->
 
-3. Once you are finished, you can close the `ssh` session (step 1).
+4. Once you are finished, you can close the `ssh` session (step 1).
 
    The VM is now allowed to work on your behalf. If you recreate it, you naturally need to renew the auth dance <font color=gray>(or map the folders so that such information remains on the host side)</font>.
 
@@ -80,8 +80,10 @@ Opening a link in your default browser: https://dash.cloudflare.com/oauth2/auth?
 **Updating (within the sandbox)**
    
 ```
-$ sudo npm install -g npm
+$ npm install -g npm
 ```
 
 `npm` will remind you of that, no doubt
+
+>Note: We've made it so that using `npm` doesn't require `sudo` in the sandbox.
 
