@@ -25,34 +25,32 @@ $ web+cf/prep.sh
 
 There are two ways to tie your VM terminal to the Cloudflare account:
 
-#### Using `wrangler login`
+#### A. Using `wrangler login`
 
-This is the normally easy way, but doing it from within a VM requires a bit of assistance. It also grants a huge number of access rights to your VM (in order to be easy to use, I guess).
+This is normally the easy way, but doing it from within a VM requires a bit of assistance. It also grants a huge number of access rights to your VM - it's kind of a "whole sale" option. In addition, it does not cover services in Cloudflare beta.
 
-You may try both this and API tokens - and decide what suits you best.
+The author prefers to use API tokens.. You may try both and decide for yourself.
 
-<details><summary>Detailed steps...</summary>
+<details><summary>Reveal detailed steps...</summary>
 
-While you do the login dance, the port `8976` of the VM should be visible in your *host* as `localhost:8976`. To accomplish this, we have a help script:
+To do the login dance, the port `8976` of the VM must be visible in your *host* as `localhost:8976` (so that a browser will reach it, after authentication).
 
 ```
 $ web+cf/login-fwd.sh
 ...
 ```
 
-The script sets up a port forward and instructs you to run the command `wrangler login browser=false` in the VM shell.
+The script sets up a port forward and instructs you to run the command `wrangler login browser=false` in the VM shell, while that port forward is active.
 
-Open the provided URL and Cloudflare presents you with this:
+Open the provided URL (Mac hint: `Option`+ double click!) and Cloudflare lists the permissions you are about to give the VM:
 
 >![](.images/login-props.png)
 
-If you ever need to re-authenticate, simply run again the script to have the ports forwarded.
+Once the VM states that login has succeeded, let the host script run to completion. It will remove the port forwarding.
 </details>
 
-It's a pretty "whole sale" experience that you grant lots of access at once. You may not need all of them.
 
-
-#### Login with custom API tokens
+#### B. Login with custom API tokens
 
 Using API tokens allows you *minute* control to what the CLI can - and can not - do. This author prefers this in the long run, since it's always good to run with the minimum set of access rights - especially if you deal with production systems.
 
@@ -101,12 +99,14 @@ It works.
 Add the token in `~/.bashrc` so it gets loaded into the environment at VM restarts.
 
 ```
-~$ echo CLOUDFLARE_API_TOKEN={token here} >>~/.bashrc 
+~$ echo "export CLOUDFLARE_API_TOKEN={token here}" >>~/.bashrc 
 ```
 
 ```
 ~$ . ~/.bashrc
 ```
+
+>NOTE! Do place a copy of the token in a "safe place", especially if you intend to use it over longer periods. VM instances are kind of meant to be easily removed and re-created from scratch (by `multipass delete --purge`).
 
 Now you are ready to go! 🌞
 
