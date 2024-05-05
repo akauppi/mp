@@ -32,8 +32,7 @@ _MP_IP=$(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )
 # tbd. the prompts should use some COLOR.
 cat <<EOL1
 *
-* Going to forward the port '${_MP_IP}:8976' as 'localhost:8976' so your browser will be able to complete
-* 'wrangler login' authentication.
+* Going to forward the port '${_MP_IP}:8976' as 'localhost:8976' so the dance can begin.
 *
 * This will require a 'sudo' pw next.
 *
@@ -45,11 +44,12 @@ read -rsp $'Press a key to continue...\n' -n1 KEY
 # Note: To access the 'id_rsa' file (which needs 'sudo' and contains a space in the path in macOS), 'sh -c' is required.
 # sudo sh -c "ls -al \"${_ID_RSA}\""   # ok
 #
-sudo -b sh -c "ssh -i \"${_ID_RSA}\" -L 8976:localhost:8976 ubuntu@${_MP_IP}"
+sudo -b sh -c "ssh -ntt -i \"${_ID_RSA}\" -L 8976:localhost:8976 ubuntu@${_MP_IP}" >/dev/null
   #
-  # Note: Cannot use '$!' to get the pid of that process (because "sudo -b"?), so we grep instead.
+  # Note: '-ntt' needed for running ssh in background (takes input from /dev/null).
 
-_PID_TO_KILL=$(ps -a | grep sudo | grep "ubuntu@${_MP_IP}" | cut -w -f 1)
+# Note: Cannot use '$!' to get the pid of that process (because "sudo -b"?), so we grep instead.
+_PID_TO_KILL=$(ps -a | grep sudo | grep "ubuntu@${_MP_IP}" | sed 's/^ *//' | cut -w -f 1)
   # 92024
 
 # exit hook to not keep the port open
