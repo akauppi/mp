@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Rust development.
 #
 # Usage:
-#   $ [MP_NAME=xxx] [MP_PARAMS=...] rust/prep.sh
+#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] rust/prep.sh
 #
 # Requires:
 #   - multipass
@@ -15,10 +15,11 @@ MY_PATH=$(dirname $0)
 # Provide defaults
 #
 MP_NAME=${MP_NAME:-rust}
-MP_PARAMS=${MP_PARAMS:---memory 6G --disk 12G --cpus 2}
+MP_PARAMS=${MP_PARAMS:---memory 6G --disk 10G --cpus 2}
   #
 	# Disk:	3.5GB seems to be needed for Rust installation.
-	#   PLENTY for RustRover remote development
+	#   However.. doing actual development (e.g. Embassy) has shown ~10GB to fall short.
+	#   Equally, if you were to use RustRover remote development, PLENTY of additional disk space is needed.
 	#		Must be in increments of 512M
 	#
 	# Hint: Use 'multipass info' on the host to observe actual usage.
@@ -58,9 +59,11 @@ multipass restart $MP_NAME
 # Even 'cargo --version' won't work unless stable|nightly is declared.
 multipass exec $MP_NAME -- sh -c ". .cargo/env && rustup default stable"
 
-echo ""
-echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
-echo ""
+if [ "${SKIP_SUMMARY}" != 1 ]; then
+  echo ""
+  echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
+  echo ""
+fi
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c ". .cargo/env && cargo --version && rustc --version && usbip version"
