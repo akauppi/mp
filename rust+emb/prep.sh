@@ -51,15 +51,12 @@ multipass exec $MP_NAME -- sh -c ". ~/.mp2/probe-rs.sh"
 
 multipass umount $MP_NAME
 
-# Maybe... something less slow would do; without this 'probe-rs' was not on the PATH. tbd.
-#multipass restart $MP_NAME
-
 echo ""
 echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
 echo ""
 
 # Test and show the versions
-multipass exec $MP_NAME -- sh -c "probe-rs --version"
-  #. ... tbd.
+multipass exec $MP_NAME -- sh -c ". .cargo/env && probe-rs --version"
+  # probe-rs 0.24.0 (git commit: 6fc653a)
 
 echo ""

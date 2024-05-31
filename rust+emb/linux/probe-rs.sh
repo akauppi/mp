@@ -4,12 +4,6 @@ set -e
 # Based on:
 #   - Probe.rs > Installation
 #     -> https://probe.rs/docs/getting-started/installation/
-#   - xx
-#     -> https://probe.rs/docs/getting-started/probe-setup/#linux%3A-udev-rules
-
-# DISABLED: these are only needed for "building probe-rs from source". Thus.. skipping for now.
-#sudo DEBIAN_FRONTEND=noninteractive \
-#  apt install -y pkg-config libudev-dev
 
 # Note: Alternatively, we could install by:
 #   <<
@@ -28,6 +22,10 @@ install -d ~/.zfunc
 probe-rs complete install
 
 # Prepare udev rules
+#
+# Based on
+#   -> https://probe.rs/docs/getting-started/probe-setup/#linux%3A-udev-rules
+#
 _RULES_FILE=/etc/udev/rules.d/69-probe-rs.rules
 
 curl --proto '=https' --tlsv1.2 -LsSf https://probe.rs/files/69-probe-rs.rules -o a.file
@@ -39,6 +37,11 @@ sudo udevadm control --reload
 
 sudo udevadm trigger
 
-# "If you're still unable to access the debug probes after following these steps, try adding your user to the plugdev group.”
+# We don't have the 'plugdev' group, so let's add it:
+#   <<
+#     If you're still unable to access the debug probes after following these steps, try adding your user to the
+#     plugdev group.
+#   <<
 #
 sudo usermod -a -G plugdev ${USER}
+

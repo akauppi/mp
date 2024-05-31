@@ -53,7 +53,23 @@ multipass exec $MP_NAME -- sh -c ". ~/.mp/usbip-drivers.sh"
 # We don't need the VM-side scripts any more.
 multipass umount $MP_NAME
 
-# Restarting *may* be good because of service updates
+# Restarting *may* be good because of service updates. Takes a little time, but it's just one time.
+# <<
+#   Service restarts being deferred:
+#    /etc/needrestart/restart.d/dbus.service
+#    systemctl restart getty@tty1.service
+#    systemctl restart serial-getty@ttyS0.service
+#    systemctl restart systemd-logind.service
+#    systemctl restart unattended-upgrades.service
+#
+#   No containers need to be restarted.
+# <<
+# <<
+#   User sessions running outdated binaries:
+#    ubuntu @ session #17: sshd[2214]
+#    ubuntu @ session #18: sshd[2816]
+#    ubuntu @ user manager service: systemd[1066]
+# <<
 multipass restart $MP_NAME
 
 # Even 'cargo --version' won't work unless stable|nightly is declared.
