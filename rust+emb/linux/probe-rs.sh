@@ -26,12 +26,17 @@ probe-rs complete install
 # Based on
 #   -> https://probe.rs/docs/getting-started/probe-setup/#linux%3A-udev-rules
 #
-_RULES_FILE=/etc/udev/rules.d/69-probe-rs.rules
+_RULES_SOURCE_URL=https://probe.rs/files/69-probe-rs.rules
+_RULES_FN=$(basename ${_RULES_SOURCE_URL})
+_RULES_TARGET=/etc/udev/rules.d/${_RULES_FN}
+_RULES_TMP=/tmp/${_RULES_FN}
 
-curl --proto '=https' --tlsv1.2 -LsSf https://probe.rs/files/69-probe-rs.rules -o a.file
-sudo mv a.file ${_RULES_FILE}
-  sudo chown ${_RULES_FILE} root
-  sudo chgrp ${_RULES_FILE} root
+curl --proto '=https' --tlsv1.2 -LsSf ${_RULES_SOURCE_URL} -o ${_RULES_TMP}
+sudo mv ${_RULES_TMP} ${_RULES_TARGET}
+
+# Ideally, we'd turn those to 'root', but you might want to edit the '/etc/udev/rules.d/69-probe-rs.rules'.
+# sudo chown root ${_RULES_TARGET}
+# sudo chgrp root ${_RULES_TARGET}
 
 sudo udevadm control --reload
 

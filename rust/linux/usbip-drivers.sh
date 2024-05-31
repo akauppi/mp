@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# References:
+#   - "How to install usbip vhci_hcd drivers on an AWS EC2 Ubuntu Kernel Version" (Ask Ubuntu; Dec 2020)
+#     -> https://askubuntu.com/questions/1303403/how-to-install-usbip-vhci-hcd-drivers-on-an-aws-ec2-ubuntu-kernel-version
+
 sudo DEBIAN_FRONTEND=noninteractive \
   apt install -y linux-tools-generic linux-modules-extra-$(uname -r)
   #
