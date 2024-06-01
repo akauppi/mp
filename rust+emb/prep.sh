@@ -45,9 +45,9 @@ MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS \
 #
 multipass mount ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
 
-# Install probe-rs
-#
 multipass exec $MP_NAME -- sh -c ". ~/.mp2/probe-rs.sh"
+multipass exec $MP_NAME -- sh -c ". ~/.mp2/rustup-targets.sh"
+multipass exec $MP_NAME -- sh -c ". ~/.mp2/apt.sh"
 
 multipass umount $MP_NAME
 
