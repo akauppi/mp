@@ -15,7 +15,7 @@ MY_PATH=$(dirname $0)
 MP_NAME=${MP_NAME:-rust-emb}
   # Note. '+' or '_' are NOT allowed in names (Multipass 1.13.1)
 
-MP_PARAMS=${MP_PARAMS:---memory 6G --disk 18G --cpus 2}
+MP_PARAMS=${MP_PARAMS:---memory 6G --disk 18G --cpus 3}
   #
   # Note: May be more than the base 'rust' VM would use; especially disk space.
 	#   Doing actual development (e.g. Embassy) has shown ~10GB to fall short.
@@ -38,14 +38,14 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 18G --cpus 2}
 
 # Build the foundation
 #
-MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS \
-  SKIP_SUMMARY=1 ${MY_PATH}/../rust/prep.sh
+MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS SKIP_SUMMARY=1 \
+  ${MY_PATH}/../rust/prep.sh
 
 # Mount our 'linux' folder
 #
 multipass mount ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
 
-multipass exec $MP_NAME -- sh -c ". ~/.mp2/esp.sh"
+multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/esp.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp2/probe-rs.sh"
 
 multipass umount $MP_NAME

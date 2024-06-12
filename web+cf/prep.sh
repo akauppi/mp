@@ -17,15 +17,18 @@ MY_PATH=$(dirname $0)
 MP_NAME=${MP_NAME:-web-cf}
   # Note. 'web+cf' or 'web_cf' not allowed names by Multipass (1.13.1)
 
-MP_PARAMS=${MP_PARAMS:---memory 4G --disk 5G --cpus 2}
+MP_PARAMS=${MP_PARAMS:---memory 4G --disk 8G --cpus 2}
   #
   # $ mp info web-cf
   #   <<
-  #   Disk usage:     2.6 iB out of 4.8 GiB
+  #   Disk usage:     2.6 GiB out of 4.8 GiB
   #   Memory usage:   180 MiB out of 3.8 GiB
   #   <<
 	#
 	# Hint: Use 'multipass info' on the host to observe actual usage.
+	#
+	# NOTE! Updating 'wrangler' with 'npm install -g wrangler' needs around 1GB headroom.
+	#       Failed when 3.9 / 4.8 GB used. => lifting the limit
 
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).

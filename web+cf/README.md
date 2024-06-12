@@ -9,6 +9,36 @@ Has:
 
 - `wrangler` CLI
 
+>Note: Cloudflare says:
+>
+> >Wrangler is installed locally into each of your projects. This allows you and your team to use the same Wrangler
+> >version, control Wrangler versions for each project, and roll back to an earlier version of Wrangler, if needed.
+>
+> We might disobey here, though. If you are okay always aiming at using the latest tools, and all your projects
+> are relatively active, it might not serve much to version control build/simulation tools, per each project.
+> 
+
+<!--
+- `wrangler` (globally installed) is 3x faster than `npx wrangler` (for each command):
+
+   ```
+    $ time npx wrangler whoami
+    ...
+    real	0m3.018s
+    user	0m0.966s
+    sys	0m0.660s
+    ```
+
+    ```
+    $ time npx wrangler whoami
+    ...
+    real	0m11.340s
+    user	0m1.896s
+    sys	0m1.429s
+    ```
+-->
+<!-- tbd. Need to see what's best. -->
+
 ## Prelude
 
 >See [`../web/README.md`](../web/README.md) for instructions on the generic tooling.
@@ -115,6 +145,7 @@ Now you are ready to go! 🌞
 **Updating (within the sandbox)**
    
 ```
+$ rm -rf ~/.npm-packages/lib/node_modules/wrangler  # hack!!!
 $ npm install -g wrangler
 ```
 
