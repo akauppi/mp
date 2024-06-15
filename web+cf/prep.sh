@@ -48,7 +48,7 @@ MP_PARAMS=${MP_PARAMS:---memory 4G --disk 8G --cpus 2}
 
 # Build the foundation
 #
-MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS ${MY_PATH}/../web/prep.sh
+OMIT_SUMMARY=1 MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS ${MY_PATH}/../web/prep.sh
 
 # Install wrangler CLI
 #
@@ -61,8 +61,12 @@ echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f
 echo ""
 
 # Test and show the versions
-multipass exec $MP_NAME -- sh -c "wrangler --version"
-  # ⛅️ wrangler 3.53.1
+#
+# Note: 'bash -i' is needed to have '~/.bashrc' read (and 'wrangler' visible in PATH).
+#     Alternative: 'sh -c "npx wrangler version"'
+#
+multipass exec $MP_NAME -- bash -c -i "wrangler --version"
+  # ⛅️ wrangler 3.60.3
   #-------------------
 
 echo ""

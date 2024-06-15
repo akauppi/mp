@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Web development.
 #
 # Usage:
-#   $ [MP_NAME=xxx] [MP_PARAMS=...] web/prep.sh
+#   $ [OMIT_SUMMARY=1] [MP_NAME=xxx] [MP_PARAMS=...] web/prep.sh
 #
 # Requires:
 #   - multipass
@@ -61,13 +61,15 @@ multipass exec $MP_NAME -- sh -c "~/.mp/gitignore.sh"
 # We don't need the VM-side scripts any more.
 multipass umount $MP_NAME
 
-echo ""
-echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
-echo ""
+if [ "${OMIT_SUMMARY}" != 1 ]; then
+  echo ""
+  echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
+  echo ""
+fi
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c "node --version && npm --version"
-  #v20.12.2
-  #10.5.0
+  #v20.14.0
+  #10.7.0
 
 echo ""
