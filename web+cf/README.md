@@ -140,10 +140,16 @@ Add the token in `~/.bashrc` so it gets loaded into the environment at VM restar
 
 Now you are ready to go! 🌞
 
-## Maintenance (CLI)
+## Maintenance
 
 **Updating (within the sandbox)**
-   
+
+```
+$ wrangler --version
+```
+
+It will tell you if an update is available. If so, you need to clean up the existing install before installing the new version:
+
 ```
 $ rm -rf ~/.npm-packages/lib/node_modules/wrangler  # hack!!!
 $ npm install -g wrangler

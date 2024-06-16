@@ -4,10 +4,13 @@ set -e
 #
 # Presuming 'web-cf' VM is running, helps you to login with the CLI.
 #
+# This script is for MANUAL USE in setting up 'wrangler' CLI; not referred to from other scripts!!!
+#
 # Usage:
 #   $ [MP_NAME=xxx] web+cf/login-fwd.sh
 #
 MY_PATH=$(dirname $0)
+LOGIN_PORT=8976
 
 _ID_RSA=/var/root/Library/Application\ Support/multipassd/ssh-keys/id_rsa
 
@@ -32,21 +35,22 @@ _MP_IP=$(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )
 # tbd. the prompts should use some COLOR.
 cat <<EOL1
 *
-* Going to forward the port '${_MP_IP}:8976' as 'localhost:8976' so the dance can begin.
+* Going to forward the port '${_MP_IP}:${LOGIN_PORT}' as 'localhost:${LOGIN_PORT}' so the dance can begin.
 *
 * This will require a 'sudo' pw next.
 *
 EOL1
 read -rsp $'Press a key to continue...\n' -n1 KEY
 
-# Expose port 8976 used by 'wrangler login' (in the VM) to the host.
+# Expose port used by 'wrangler login' (in the VM) to the host.
 #
 # Note: To access the 'id_rsa' file (which needs 'sudo' and contains a space in the path in macOS), 'sh -c' is required.
 # sudo sh -c "ls -al \"${_ID_RSA}\""   # ok
 #
-sudo -b sh -c "ssh -ntt -i \"${_ID_RSA}\" -L 8976:localhost:8976 ubuntu@${_MP_IP}" >/dev/null
+sudo -b sh -c "ssh -ntt -i \"${_ID_RSA}\" -o StrictHostKeyChecking=accept-new -L ${LOGIN_PORT}:localhost:${LOGIN_PORT} ubuntu@${_MP_IP}" >/dev/null
   #
   # Note: '-ntt' needed for running ssh in background (takes input from /dev/null).
+  # Note 2: '-o Strict...=accept-new' so that it won't ask you interactively for further permission.
 
 # Note: Cannot use '$!' to get the pid of that process (because "sudo -b"?), so we grep instead.
 _PID_TO_KILL=$(ps -a | grep sudo | grep "ubuntu@${_MP_IP}" | sed 's/^ *//' | cut -w -f 1)
