@@ -5,12 +5,15 @@ set -e
 # Creates a Multipass VM, to be used for Rust Embedded (Embassy) development.
 #
 # Usage:
-#   $ [MP_NAME=xxx] [MP_PARAMS=...] rust+emb/prep.sh
+#   $ [XTENSA=1] [MP_NAME=xxx] [MP_PARAMS=...] rust+emb/prep.sh
 #
 # Requires:
 #   - multipass
 #
 MY_PATH=$(dirname $0)
+
+# By default, only RISC-V support is installed; Xtensa needs more
+XTENSA=${XTENSA:-0}
 
 MP_NAME=${MP_NAME:-rust-emb}
   # Note. '+' or '_' are NOT allowed in names (Multipass 1.13.1)
@@ -47,6 +50,13 @@ multipass mount ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
 
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/esp.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp2/probe-rs.sh"
+
+# Enable if you intend to do 'esp-rs/esp-hal' development (ALSO enable Xtensa support, in that case, for tests)
+#multipass exec $MP_NAME -- sh -c ". ~/.mp2/esp-rs-dev.sh"
+
+if [ "${XTENSA}" == 1 ]; then
+  multipass exec $MP_NAME -- sh -c ". ~/.mp2/espup.sh"
+fi
 
 multipass umount $MP_NAME
 

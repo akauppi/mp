@@ -2,7 +2,10 @@
 
 Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 
+- RISC V Rust compilation targets (C3, C6)
+- [espflash](https://github.com/esp-rs/espflash)
 - [probe.rs](https://probe.rs/)
+- (optional) Xtensa Rust toolchain and targets
 
 >`usbip` client is already installed by `rust` recipe.
 
@@ -35,6 +38,10 @@ Multipass IP (rust-emb): 192.168.64.101
 
 probe-rs 0.24.0 (git commit: 6fc653a)
 ```
+
+### Xtensa based chips
+
+To enable Xtensa targets, add `XTENSA=1` before the command. Be aware that this consumes ~1.5GiB more disk space from the image.
 
 
 ## Preparing the target device
