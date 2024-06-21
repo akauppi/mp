@@ -148,12 +148,17 @@ Now you are ready to go! 🌞
 $ wrangler --version
 ```
 
-It will tell you if an update is available. If so, you need to clean up the existing install before installing the new version:
+It will tell you if an update is available. If so:
 
 ```
-$ rm -rf ~/.npm-packages/lib/node_modules/wrangler  # hack!!!
 $ npm install -g wrangler
 ```
+
+>This worked for `3.60.3` -> `3.61.0`. If you get difficulties, you *may* need to remove the wrangler state before reinstalling:
+>
+>```
+>rm -rf ~/.npm-packages/lib/node_modules/wrangler
+>```
 
 ## References
 
