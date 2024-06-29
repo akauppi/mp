@@ -10,9 +10,7 @@ set -e
 #   $ [MP_NAME=xxx] web+cf/login-fwd.sh
 #
 MY_PATH=$(dirname $0)
-LOGIN_PORT=8976
-
-_ID_RSA=/var/root/Library/Application\ Support/multipassd/ssh-keys/id_rsa
+_PORT=8976
 
 # Name same as in 'prep.sh'
 #
@@ -28,44 +26,7 @@ MP_NAME=${MP_NAME:-web-cf}
   exit 2
 } >&2
 
-# Pick the IP
-#
-_MP_IP=$(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )
-
-# tbd. the prompts should use some COLOR.
-cat <<EOL1
-*
-* Going to forward the port '${_MP_IP}:${LOGIN_PORT}' as 'localhost:${LOGIN_PORT}' so the dance can begin.
-*
-* This will require a 'sudo' pw next.
-*
-EOL1
-read -rsp $'Press a key to continue...\n' -n1 KEY
-
-# Expose port used by 'wrangler login' (in the VM) to the host.
-#
-# Note: To access the 'id_rsa' file (which needs 'sudo' and contains a space in the path in macOS), 'sh -c' is required.
-# sudo sh -c "ls -al \"${_ID_RSA}\""   # ok
-#
-sudo -b sh -c "ssh -ntt -i \"${_ID_RSA}\" -o StrictHostKeyChecking=accept-new -L ${LOGIN_PORT}:localhost:${LOGIN_PORT} ubuntu@${_MP_IP}" >/dev/null
-  #
-  # Note: '-ntt' needed for running ssh in background (takes input from /dev/null).
-  # Note 2: '-o Strict...=accept-new' so that it won't ask you interactively for further permission.
-
-# Note: Cannot use '$!' to get the pid of that process (because "sudo -b"?), so we grep instead.
-_PID_TO_KILL=$(ps -a | grep sudo | grep "ubuntu@${_MP_IP}" | sed 's/^ *//' | cut -w -f 1)
-  # 92024
-
-# exit hook to not keep the port open
-hook() {
-  kill ${_PID_TO_KILL}
-}
-trap hook EXIT
-
-# Ask the user to do the login. This way they see the URL best in the VM.
-#
-cat <<EOL
-*
+_MSG="*
 * Port is now forwarded.
 * Please
 *   - run 'wrangler login --browser=false' in the VM
@@ -73,8 +34,6 @@ cat <<EOL
 *   - sign in
 *
 * Once the CLI is happy (you may try 'wrangler whoami'), press a key and we'll close the port forward.
-*
-EOL
-read -rsp $'Press a key once login dance is over...\n' -n1 KEY
+*"
 
-echo ""
+PORT=${_PORT} MP_NAME=${MP_NAME} MSG="${_MSG}" ${MY_PATH}/../tools/port-fwd.sh

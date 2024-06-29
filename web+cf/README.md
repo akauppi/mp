@@ -9,20 +9,21 @@ Has:
 
 - `wrangler` CLI
 
->Note: Cloudflare says:
->
-> >Wrangler is installed locally into each of your projects. This allows you and your team to use the same Wrangler
-> >version, control Wrangler versions for each project, and roll back to an earlier version of Wrangler, if needed.
->
-> We might disobey here, though. If you are okay always aiming at using the latest tools, and all your projects
-> are relatively active, it might not serve much to version control build/simulation tools, per each project.
-> 
+	>Note: Cloudflare says:
+	>
+	>>*Wrangler is installed locally into each of your projects. This allows you and your team to use the same Wrangler version, control Wrangler versions for each project, and roll back to an earlier version of Wrangler, if needed.*
+	>
+	> We might disobey here, though. If you are okay always aiming at using the latest tools, and all your projects
+	> are relatively active, it might not serve much to version control build/simulation tools, per each project.
 
-<!--
-- `wrangler` (globally installed) is 3x faster than `npx wrangler` (for each command):
-
+	<!-- #whisper
+	<p />
+	
+	>Also note: `wrangler` (globally installed) is 3x faster than `npx wrangler`, for each command.
+	
+	<!_-- evidence:
    ```
-    $ time npx wrangler whoami
+    $ time wrangler whoami
     ...
     real	0m3.018s
     user	0m0.966s
@@ -36,8 +37,7 @@ Has:
     user	0m1.896s
     sys	0m1.429s
     ```
--->
-<!-- tbd. Need to see what's best. -->
+	-->
 
 ## Prelude
 
@@ -59,24 +59,26 @@ There are two ways to tie your VM terminal to the Cloudflare account:
 
 This is normally the easy way, but doing it from within a VM requires a bit of assistance. It also grants a huge number of access rights to your VM - it's kind of a "whole sale" option. In addition, it does not cover services in Cloudflare beta.
 
-The author prefers to use API tokens.. You may try both and decide for yourself.
+You may try both and decide for yourself.
 
-<details><summary>Reveal detailed steps...</summary>
-
-To do the login dance, the port `8976` of the VM must be visible in your *host* as `localhost:8976` (so that a browser will reach it, after authentication).
-
-```
-$ web+cf/login-fwd.sh
-...
-```
-
-The script sets up a port forward and instructs you to run the command `wrangler login browser=false` in the VM shell, while that port forward is active.
-
-Open the provided URL (Mac hint: `Option`+ double click!) and Cloudflare lists the permissions you are about to give the VM:
-
->![](.images/login-props.png)
-
-Once the VM states that login has succeeded, let the host script run to completion. It will remove the port forwarding.
+<details><summary>Reveal detailed steps</summary>
+>
+>To do the login dance, the port `8976` of the VM must be visible in your *host* as `localhost:8976` (so that a browser will reach it, after authentication).
+>
+>Run this:
+>
+>```
+>$ web+cf/login-fwd.sh
+>...
+>```
+>
+>The script sets up a port forward and instructs you to run the command `wrangler login browser=false` in the VM shell, while that port forward is active.
+>
+>Open the provided URL and Cloudflare lists the permissions you are about to give the VM:
+>
+>>![](.images/login-props.png)
+>
+>Once the VM states that login has succeeded, let the host script run to completion. It will remove the port forwarding.
 </details>
 
 
@@ -151,14 +153,19 @@ $ wrangler --version
 It will tell you if an update is available. If so:
 
 ```
-$ npm install -g wrangler
+$ npm update -g wrangler
 ```
 
->This worked for `3.60.3` -> `3.61.0`. If you get difficulties, you *may* need to remove the wrangler state before reinstalling:
+>Note. Before `3.60.3`, there were difficulties with the update. If you get any, you can just remove the wrangler state before reinstalling:
 >
 >```
 >rm -rf ~/.npm-packages/lib/node_modules/wrangler
 >```
+
+<!--
+3.60.3 -> 3.61.0		went fine
+3.61.0 -> 3.62.0		went fine
+-->
 
 ## References
 
