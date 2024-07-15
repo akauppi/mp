@@ -50,6 +50,7 @@ multipass mount ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
 
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/esp.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp2/probe-rs.sh"
+multipass exec $MP_NAME -- sh -c ". ~/.mp2/nightly.sh"
 
 # Enable if you intend to do 'esp-rs/esp-hal' development (ALSO enable Xtensa support, in that case, for tests)
 #multipass exec $MP_NAME -- sh -c ". ~/.mp2/esp-rs-dev.sh"

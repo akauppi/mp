@@ -1,4 +1,4 @@
-# Rust Embedded development
+# Rust development with Embassy
 
 Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 
@@ -6,6 +6,7 @@ Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 - [espflash](https://github.com/esp-rs/espflash)
 - [probe.rs](https://probe.rs/)
 - (optional) Xtensa Rust toolchain and targets
+- `nightly` toolchain, as long as it's needed/favoured by Embassy
 
 >`usbip` client is already installed by `rust` recipe.
 
@@ -54,8 +55,8 @@ The instructions below are on the ESP32-C3 DevKit-M1 board. If you have another 
 
 With the help of that repo:
 
-- [ ] Have USB/IP set up between the PC/RPi and your VM
-- [ ] See that you can reach the device via `probe-rs`
+- Have USB/IP set up between the PC/RPi and your VM
+- See that you can reach the device via `probe-rs`
 
 <!-- tbd. give test instructions for each of the above steps
 -->
@@ -94,6 +95,10 @@ Say you have a folder `/Users/mike/Git/some-project`. This is how to share it wi
 ## Maintenance
 
 **Updating (within the sandbox)**
+
+```
+$ rustup update
+```
    
 ```
 $ cargo install probe-rs-tools
