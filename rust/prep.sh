@@ -50,6 +50,9 @@ multipass exec $MP_NAME -- sudo sh -c "apt update && DEBIAN_FRONTEND=noninteract
 multipass exec $MP_NAME -- sh -c ". ~/.mp/rustup.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp/usbip-drivers.sh"
 
+# tbd. Make this steerable by.. 'CARGO_GENERATE=1' ('rust+emb' might want to always have it)
+#multipass exec $MP_NAME -- sh -c ". ~/.mp/cargo-generate.sh"
+
 # We don't need the VM-side scripts any more.
 multipass umount $MP_NAME
 
