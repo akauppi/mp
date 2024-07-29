@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Extra tooling for 'esp-rs/esp-hal'
+# Extra tooling for 'esp-rs/esp-hal' DEVELOPMENT (not using them!)
 #
 # See:
 #   - Contributing

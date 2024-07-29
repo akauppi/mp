@@ -14,7 +14,6 @@ sudo DEBIAN_FRONTEND=noninteractive \
 sudo modprobe vhci-hcd
 
 # Automatically enable those drivers, in case of VM restart.
-sudo -- sh -c " \
-  (echo vhci_hcd >> /etc/modules-load.d/modules.conf) && \
-  (echo usbip_core >> /etc/modules-load.d/modules.conf) \
+sudo -- sh -c "\
+  echo 'vhci_hcd\nusbip_core' >> /etc/modules-load.d/modules.conf \
 "

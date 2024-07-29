@@ -7,6 +7,4 @@ rustup toolchain install nightly
 
 rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 
-# ..and for Rust code generation ('bindgen', I think..):
-#
 rustup component add --toolchain nightly-x86_64-unknown-linux-gnu rustfmt

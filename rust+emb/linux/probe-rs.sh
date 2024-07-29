@@ -5,11 +5,6 @@ set -e
 #   - Probe.rs > Installation
 #     -> https://probe.rs/docs/getting-started/installation/
 
-# Note: Alternatively, we could install by:
-#   <<
-#    $ cargo binstall probe-rs-tools
-#   <<
-#
 INSTALL_URL=https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh
   # 0.24 specific: https://github.com/probe-rs/probe-rs/releases/download/v0.24.0/probe-rs-tools-installer.sh
 
