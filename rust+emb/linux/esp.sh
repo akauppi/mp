@@ -15,6 +15,8 @@ rustup target add riscv32imac-unknown-none-elf
 
 # espflash
 #
+# tbd. TAKES A LONG TIME: see if there's a faster ready-binary way?
+#
 sudo DEBIAN_FRONTEND=noninteractive apt install -y pkg-config libudev-dev
 cargo install espflash
   # Needed by 'esp-hal' flashing
