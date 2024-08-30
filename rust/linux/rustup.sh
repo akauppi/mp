@@ -25,7 +25,5 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- \
 
 # '. ~/.cargo/env' appended to '.bashrc'
 
-# Note: Running 'cargo --version' etc. here doesn't cut it.
-#   Then again, it's best to do those at the calling level, after everything's been installed.
-#-- the end --
-
+# Primes 'rustup' so that e.g. 'cargo' can be run, and/or 'rustfmt' installed.
+. ~/.cargo/env && rustup default stable

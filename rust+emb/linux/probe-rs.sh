@@ -5,10 +5,16 @@ set -e
 #   - Probe.rs > Installation
 #     -> https://probe.rs/docs/getting-started/installation/
 
-INSTALL_URL=https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh
-  # 0.24 specific: https://github.com/probe-rs/probe-rs/releases/download/v0.24.0/probe-rs-tools-installer.sh
+# DISABLED, until >= 0.24.1 is available
+#|INSTALL_URL=https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh
+#|  # 0.24 specific: https://github.com/probe-rs/probe-rs/releases/download/v0.24.0/probe-rs-tools-installer.sh
+#|
+#|curl --proto '=https' --tlsv1.2 -LsSf ${INSTALL_URL} | sh
 
-curl --proto '=https' --tlsv1.2 -LsSf ${INSTALL_URL} | sh
+# Install FROM GITHUB (takes time!), until >= 0.24.1 is out!
+# Reason: there's something in the handling of ESP32-C3 that's better in the latest. defmt output is usually lost with 0.24.0.
+#
+cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --locked --force
 
 # Shell completion
 #

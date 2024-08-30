@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Rust Embedded (Embassy) development.
 #
 # Usage:
-#   $ [XTENSA=1] [MP_NAME=xxx] [MP_PARAMS=...] rust+emb/prep.sh
+#   $ [XTENSA=1] [MP_NAME=xxx] [MP_PARAMS=...] [USE_NATIVE_MOUNT=0|1] rust+emb/prep.sh
 #
 # Requires:
 #   - multipass
@@ -16,7 +16,7 @@ MY_PATH=$(dirname $0)
 XTENSA=${XTENSA:-0}
 
 MP_NAME=${MP_NAME:-rust-emb}
-  # Note. '+' or '_' are NOT allowed in names (Multipass 1.13.1)
+  # Note. '+' or '_' are NOT allowed in Multipass names (1.13; 1.14)
 
 MP_PARAMS=${MP_PARAMS:---memory 6G --disk 18G --cpus 3}
   #
@@ -46,7 +46,11 @@ MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS SKIP_SUMMARY=1 \
 
 # Mount our 'linux' folder
 #
-multipass mount ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
+if [ "${USE_NATIVE_MOUNT}" != 1 ]; then  # original!
+  multipass mount ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
+else
+  multipass mount --type=native ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
+fi
 
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/esp.sh"
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/probe-rs.sh"
@@ -61,7 +65,18 @@ if [ "${XTENSA}" == 1 ]; then
   multipass exec $MP_NAME -- sh -c ". ~/.mp2/espup.sh"
 fi
 
-multipass umount $MP_NAME
+# DOES NOT WORK in Multipass 1.14.0 #4 -> https://github.com/akauppi/mp/issues/4
+# <<
+#   info failed: cannot connect to the multipass socket
+# <<
+if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
+  multipass umount $MP_NAME
+else
+  # for now, just leave the mounts, or:
+  #multipass stop $MP_NAME
+  #multipass umount $MP_NAME
+  true
+fi
 
 echo ""
 echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
