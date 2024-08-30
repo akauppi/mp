@@ -35,23 +35,28 @@ It's possible, by -say- 2026, that such remote development platforms become the 
 ## Sandboxes available
 
 - [`rust`](rust/README.md); stable
+- [`rust+emb`](rust+emb/README.md)
+
+	Rust aimed at embedded (ESP32) development.
+
 - [`web`](web/README.md); stable
 - [`web+cf`](web+cf/README.md)
 
-   The last is an example on how a VM definition can be derived from a more generic one.
-   In this case, adding Cloudflare CLI (`wrangler`), on top of generic web tools.
+	Cloudflare CLI (`wrangler`) on top of generic web tools.
 
 ## Requirements
 
 - Multipass 1.13.1 installed
 
-The system is intended to work on all macOS, Linux and Windows hosts, but is **only tested on macOS**. 
+	Also **must work** with Multipass 1.14.
+
+The system is intended to work on all macOS, Linux and Windows hosts, but is only tested on macOS. If you find issues, please create an Issue!
 
 >Note: For Windows, Pro versions are recommended since only they provide Hyper-V (native) virtualization.
 
 <!-- Developed with:
-- macOS 14.4
-- Multipass 1.13.1
+- macOS 14.6
+- Multipass 1.14.0
 -->
 
 ## Usage
@@ -66,8 +71,8 @@ $ rust/prep.sh
 ```
 Multipass IP (rust): 192.168.64.74
 
-cargo 1.75.0 (1d8b05cdd 2023-11-20)
-rustc 1.75.0 (82e1608df 2023-12-21)
+cargo 1.80.1 (376290515 2024-07-16)
+rustc 1.80.1 (3f5fd8dd4 2024-08-06)
 usbip (usbip-utils 2.0)
 
 ```
@@ -76,7 +81,7 @@ To add a project folder to be shared between the host (macOS) and the Linux side
 
 ```
 $ multipass mount -type native $(pwd) rust:/home/ubuntu/SOME
-
+ 
 $ multipass start rust
 ```
 
@@ -88,57 +93,59 @@ $ multipass shell rust
 
 You are now in an Ubuntu sandbox.
 
-<!--
->Hint: Change your Multipass terminal's look by (right click) > `Show Inspector`.
--->
+## Hints
 
-### Sharing USB devices
+### Separate color for the VM terminal
 
-To see how to share a USB device, see e.g. [`usbipd-win`]().
+Change your Multipass terminal's look by `(right click)` > `Show Inspector`. Different coloring helps tremendously!
 
-```
-rust$ sudo usbip attach -r 192.168.1.29 -b 3-1
-```
-```
-rust$ lsusb
-Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
-Bus 001 Device 002: ID 1a86:55d4 QinHeng Electronics SONOFF Zigbee 3.0 USB Dongle Plus V2
-Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-```
+### Accessing USB devices
 
->Note: Sharing like this, you'll always get a predictable device name in the Multipass VM. In this case, "Device 002" shows as `/dev/ttyACM0`.
+Multipass does not provide USB pass-through. However, you can reach USB devices using e.g. [`usbipd-win`](https://github.com/dorssel/usbipd-win).
 
-### Updating
+*tbd. If needed, a separate `docs/` file about this.*
 
-```
-rust$ rustup update
-...
-```
 
-### Troubleshooting
+## WARNING ON MULTIPASS 1.14!!
 
-**Kernel version has upgraded**
+It some some issues with mounts. Until those are resolved, you should:
 
-```
-libusbip: error: udev_device_new_from_subsystem_sysname failed
-usbip: error: open vhci_driver
-```
+- **AVOID** any maintenance-like commands on a running instance
 
-If you get this info, like `sudo apt upgrade` has increased your Linux kernel, and the `vhci-hcd` driver isn't available, any more.
+   This means no `multipass mount`, `umount`, `restart` or `delete`.
+   
+   Instead, do a `multipass stop` first, and then the required maintenance command (turning `restart` into a `stop` + `start`).
+   
+   This seems to immensely (perhaps completely!) improve the stability of the Multipass VM.
+   
+- IF you end up in suspicious errors, instantly:
 
->```
->$ sudo ls /lib/modules
->5.15.0-92-generic  5.15.0-94-generic
->```
->
->Likely set up as `5.15.0-92`. Updated to `..-94`.
+	- restart your host
+	- `stop` and `delete --purge` all instances
+	- check that `multipass info` gives "no instances"
+	- ...continue
 
-Rerun commands from `rust/linux/usbip-drivers.sh`:
+A bit harsh, but.. since you can easily recreate the VM's from nothing (with `mp`), shouldn't be worth risking the stability. 
+
+---
+
+IF you get such an error:
 
 ```
-$ sudo apt install -y linux-tools-generic linux-modules-extra-$(uname -r)
-[...]
-$ sudo modprobe vhci-hcd
+$ mp stop --force rust-emb
+[2024-08-30T12:30:41.371] [error] [rust-emb] process error occurred Crashed program: qemu-system-x86_64; error: Process crashed
+[2024-08-30T12:30:41.373] [error] [rust-emb] error: program: qemu-system-x86_64; error: Process crashed
 ```
 
-The `usbip attach -r {IP} -b ...` should no work.
+...restart the Multipass service, and retry the `stop` (no host reboot is needed):
+
+```
+$ sudo launchctl unload /Library/LaunchDaemons/com.canonical.multipassd.plist
+$ sudo launchctl load /Library/LaunchDaemons/com.canonical.multipassd.plist
+```
+
+```
+$ mp stop rust-emb
+```
+
+---

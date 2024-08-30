@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Rust development.
 #
 # Usage:
-#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] [USE_NATIVE_MOUNT=0|1] rust/prep.sh
+#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] [USE_NATIVE_MOUNT=1] rust/prep.sh
 #
 # Requires:
 #   - multipass
@@ -25,11 +25,11 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 10G --cpus 2}
 	# Hint: Use 'multipass info' on the host to observe actual usage.
 	#     RustRover also has a stats display in its remote development UI.
 
-if [ "${USE_NATIVE_MOUNT}" == "" ]; then
-  echo >&2 -e "PROBLEM:\nThere's a Multipass bug in version 1.14 that affects mounts. Please run with 'USE_NATIVE_MOUNT=1' defined!"
-  echo >&2 -e "  https://github.com/canonical/multipass/issues/3642\n"
-  exit 140
-fi
+#Rif [ "${USE_NATIVE_MOUNT}" == "" ]; then
+#R  echo >&2 -e "PROBLEM:\nThere's a Multipass bug in version 1.14 that affects mounts. Please run with 'USE_NATIVE_MOUNT=1' defined!"
+#R  echo >&2 -e "  https://github.com/canonical/multipass/issues/3642\n"
+#R  exit 140
+#Rfi
 
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).
@@ -62,20 +62,19 @@ multipass exec $MP_NAME -- sudo sh -c "apt update && DEBIAN_FRONTEND=noninteract
 multipass exec $MP_NAME -- sh -c ". ~/.mp/rustup.sh"
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp/rustfmt.sh"
 
-multipass exec $MP_NAME -- sh -c ". ~/.mp/usbip-drivers.sh"
-
 # tbd. Make this steerable by.. 'CARGO_GENERATE=1' ('rust+emb' might want to always have it)
 #multipass exec $MP_NAME -- sh -c ". ~/.mp/cargo-generate.sh"
 
 if [ "${USE_NATIVE_MOUNT}" != 1 ]; then  # original!
   # We don't need the VM-side scripts any more.
+  multipass stop $MP_NAME   # antidote for 1.14; does it work???
   multipass umount $MP_NAME
 
 else
   # Bug in 1.14.0 forces us to use native mounts, and those cannot be unmounted without stopping the VM.
   # Leave the mount on... or not? :)
   #
-  # Since we are going to be restarting next, 'stop' takes no additional time.
+  # Since we are going to be restarting, 'stop' takes no additional time.
   multipass stop $MP_NAME
   multipass umount $MP_NAME
 fi
@@ -97,18 +96,26 @@ fi
 #    ubuntu @ session #18: sshd[2816]
 #    ubuntu @ user manager service: systemd[1066]
 # <<
-multipass restart $MP_NAME
-  #
-  # 30-Aug-24: Using classic mounts, we get:
-  #   <<
-  #     restart failed: cannot connect to the multipass socket
-  #   <<
-  #
-  #   ..and after that:
-  #   <<
-  #     $ mp info rust
-  #     info failed: ssh connection failed: 'Connection refused'
-  #   <<
+
+# DO NOT use 'multipass restart' (after 'umount') in Multipass 1.14.0
+if false; then
+  multipass restart $MP_NAME
+    #
+    # 30-Aug-24: Using classic mounts, we get:
+    #   <<
+    #     restart failed: cannot connect to the multipass socket
+    #   <<
+    #
+    #   ..and after that:
+    #   <<
+    #     $ mp info rust
+    #     info failed: ssh connection failed: 'Connection refused'
+    #   <<
+else
+  # this works!
+  multipass stop $MP_NAME
+  multipass start $MP_NAME
+fi
 
 if [ "${SKIP_SUMMARY}" != 1 ]; then
   echo ""
@@ -117,9 +124,8 @@ if [ "${SKIP_SUMMARY}" != 1 ]; then
 fi
 
 # Test and show the versions
-multipass exec $MP_NAME -- sh -c ". .cargo/env && cargo --version && rustc --version && usbip version"
-  # cargo 1.75.0 (1d8b05cdd 2023-11-20)
-  # rustc 1.75.0 (82e1608df 2023-12-21)
-  # usbip (usbip-utils 2.0)
+multipass exec $MP_NAME -- sh -c ". .cargo/env && cargo --version && rustc --version"
+  # cargo 1.80.1 (376290515 2024-07-16)
+  # rustc 1.80.1 (3f5fd8dd4 2024-08-06)
 
 echo ""

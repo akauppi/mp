@@ -47,13 +47,18 @@ MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS SKIP_SUMMARY=1 \
 # Mount our 'linux' folder
 #
 if [ "${USE_NATIVE_MOUNT}" != 1 ]; then  # original!
+  multipass stop $MP_NAME
   multipass mount ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
+  multipass start $MP_NAME
 else
+  multipass stop $MP_NAME
   multipass mount --type=native ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
+  multipass start $MP_NAME
 fi
 
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/esp.sh"
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/probe-rs.sh"
+multipass exec $MP_NAME -- sh -c ". ~/.mp2/usbip-drivers.sh"
 
 # tbd. if you need it, make optional  [UNPOLISHED]
 # multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/nightly.sh"
@@ -65,16 +70,19 @@ if [ "${XTENSA}" == 1 ]; then
   multipass exec $MP_NAME -- sh -c ". ~/.mp2/espup.sh"
 fi
 
-# DOES NOT WORK in Multipass 1.14.0 #4 -> https://github.com/akauppi/mp/issues/4
+# Multipass 1.14.0 absolutely NEEDS us to stop the instance first. Otherwise, following the 'umount' (in 'multipass info'):
 # <<
 #   info failed: cannot connect to the multipass socket
 # <<
 if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
+  multipass stop $MP_NAME
   multipass umount $MP_NAME
+  multipass start $MP_NAME
 else
   # for now, just leave the mounts, or:
   #multipass stop $MP_NAME
   #multipass umount $MP_NAME
+  #multipass start $MP_NAME
   true
 fi
 
@@ -83,7 +91,8 @@ echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f
 echo ""
 
 # Test and show the versions
-multipass exec $MP_NAME -- sh -c ". .cargo/env && probe-rs --version"
+multipass exec $MP_NAME -- sh -c ". .cargo/env && probe-rs --version && usbip version"
   # probe-rs 0.24.0 (git commit: 6fc653a)
+  # usbip (usbip-utils 2.0)
 
 echo ""
