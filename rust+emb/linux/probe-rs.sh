@@ -11,10 +11,14 @@ set -e
 #|
 #|curl --proto '=https' --tlsv1.2 -LsSf ${INSTALL_URL} | sh
 
-# Install FROM GITHUB (takes time!), until >= 0.24.1 is out!
-# Reason: there's something in the handling of ESP32-C3 that's better in the latest. defmt output is usually lost with 0.24.0.
+# Install FROM GITHUB (takes time!)
+# Reason: there's something in the handling of ESP32-C3 that's better in the _very specific revision_.
 #
-cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --locked --force
+# Revisit this once '0.24.1' is out. tbd.
+#
+# NOTE: Problems only affect C3; C6 is fine to use with stock 'probe-rs'.
+#
+cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --rev 0fb93950 --locked --force
 
 # Shell completion
 #
@@ -53,3 +57,7 @@ sudo udevadm trigger
 #
 sudo usermod -a -G plugdev ${USER}
 
+## 'git' CLI is needed, for 'probe-rs --version' to properly show version when installed with '--git' (as we do).
+# Install it (can remove once we are back to using a stock 'probe-rs'). tbd.
+#
+sudo DEBIAN_FRONTEND=noninteractive apt install -y git
