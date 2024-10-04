@@ -63,9 +63,6 @@ multipass exec $MP_NAME -- sh -c ". ~/.mp2/usbip-drivers.sh"
 # tbd. if you need it, make optional  [UNPOLISHED]
 # multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/nightly.sh"
 
-# Enable if you intend to do 'esp-rs/esp-hal' DEVELOPMENT -- not just using them (ALSO enable Xtensa support - and 'nightly') [UNPOLISHED]
-#multipass exec $MP_NAME -- sh -c ". ~/.mp2/esp-rs-dev.sh"
-
 if [ "${XTENSA}" == 1 ]; then
   multipass exec $MP_NAME -- sh -c ". ~/.mp2/espup.sh"
 fi
@@ -74,17 +71,20 @@ fi
 # <<
 #   info failed: cannot connect to the multipass socket
 # <<
-if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
-  multipass stop $MP_NAME
-  multipass umount $MP_NAME
-  multipass start $MP_NAME
-else
-  # for now, just leave the mounts, or:
-  #multipass stop $MP_NAME
-  #multipass umount $MP_NAME
-  #multipass start $MP_NAME
-  true
-fi
+multipass stop $MP_NAME
+multipass umount $MP_NAME
+sleep 1   # TEMP/Does this help 'start' to succeed?
+multipass start $MP_NAME
+  # ^-- THIS line has had problems:
+  #   <<
+  #   start failed: cannot connect to the multipass socket
+  #   <<
+
+# Clean the '/home/ubuntu/target' folder. It has ~1.2GB of build artefacts we don't need any more.
+#
+multipass exec $MP_NAME -- sh -c "du -h -d 1 target; rm -rf ~/target/release"
+  #1.2G	target/release
+  #1.2G	target
 
 echo ""
 echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
@@ -92,7 +92,7 @@ echo ""
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c ". .cargo/env && probe-rs --version && usbip version"
-  # probe-rs 0.24.0 (git commit: 6fc653a)
+  # probe-rs 0.24.0 (git commit: ...)
   # usbip (usbip-utils 2.0)
 
 echo ""

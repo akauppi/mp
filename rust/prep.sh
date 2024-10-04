@@ -25,12 +25,6 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 10G --cpus 2}
 	# Hint: Use 'multipass info' on the host to observe actual usage.
 	#     RustRover also has a stats display in its remote development UI.
 
-#Rif [ "${USE_NATIVE_MOUNT}" == "" ]; then
-#R  echo >&2 -e "PROBLEM:\nThere's a Multipass bug in version 1.14 that affects mounts. Please run with 'USE_NATIVE_MOUNT=1' defined!"
-#R  echo >&2 -e "  https://github.com/canonical/multipass/issues/3642\n"
-#R  exit 140
-#Rfi
-
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).
 #
@@ -49,7 +43,7 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 10G --cpus 2}
 
 # Launch and prime
 #
-if [ "${USE_NATIVE_MOUNT}" != 1 ]; then  # original!
+if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
   multipass launch lts --name $MP_NAME $MP_PARAMS --mount ${MY_PATH}/linux:/home/ubuntu/.mp
 else
   multipass launch lts --name $MP_NAME $MP_PARAMS
@@ -65,15 +59,14 @@ multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp/rustfmt.sh"
 # tbd. Make this steerable by.. 'CARGO_GENERATE=1' ('rust+emb' might want to always have it)
 #multipass exec $MP_NAME -- sh -c ". ~/.mp/cargo-generate.sh"
 
-if [ "${USE_NATIVE_MOUNT}" != 1 ]; then  # original!
+multipass exec $MP_NAME -- sh -c ". ~/.mp/shared-target.sh"
+
+if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
   # We don't need the VM-side scripts any more.
-  multipass stop $MP_NAME   # antidote for 1.14; does it work???
+  multipass stop $MP_NAME   # antidote for 1.14.0
   multipass umount $MP_NAME
 
 else
-  # Bug in 1.14.0 forces us to use native mounts, and those cannot be unmounted without stopping the VM.
-  # Leave the mount on... or not? :)
-  #
   # Since we are going to be restarting, 'stop' takes no additional time.
   multipass stop $MP_NAME
   multipass umount $MP_NAME
@@ -97,25 +90,20 @@ fi
 #    ubuntu @ user manager service: systemd[1066]
 # <<
 
-# DO NOT use 'multipass restart' (after 'umount') in Multipass 1.14.0
-if false; then
-  multipass restart $MP_NAME
-    #
-    # 30-Aug-24: Using classic mounts, we get:
-    #   <<
-    #     restart failed: cannot connect to the multipass socket
-    #   <<
-    #
-    #   ..and after that:
-    #   <<
-    #     $ mp info rust
-    #     info failed: ssh connection failed: 'Connection refused'
-    #   <<
-else
-  # this works!
-  multipass stop $MP_NAME
-  multipass start $MP_NAME
-fi
+# 'multipass restart' (on a living VM) is not cool for 1.14.0.
+#
+# 30-Aug-24: Using classic mounts:
+#   <<
+#     restart failed: cannot connect to the multipass socket
+#   <<
+#     ..and after that:
+#   <<
+#     $ mp info rust
+#     info failed: ssh connection failed: 'Connection refused'
+#   <<
+#
+multipass stop $MP_NAME
+multipass start $MP_NAME
 
 if [ "${SKIP_SUMMARY}" != 1 ]; then
   echo ""

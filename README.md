@@ -2,6 +2,8 @@
 
 Scripts for setting up [Multipass](https://multipass.run) virtual machines, in the way of WSL, but on macOS.
 
+## Background
+
 **Why?**
 
 World is a risky place. Sandboxing allows you to separate *business account* (emails etc.) from *developer account* (that pulls in stuff from third party sources on the Internet), without disturbing the workflow, too much.
@@ -14,11 +16,11 @@ Sandboxing of course needs discipline. The `mp` approach is done so that:
 
 1. Tooling is separate from development repos
 
-   This is important so that your repos are not cluttered by toolchain choices. A repo would work "just fine" with native tooling, if someone so wishes.
+   This is important so that your repos are not cluttered by toolchain choices. A repo would work "just fine" with native tooling (on Ubuntu Linux), if someone so wishes.
 
-2. We want to support remote IDE's
+2. We want to support remote IDE's (later..)
 
-   However, this does require a beefier machine to run (more cores; more memory). You might opt for partially VM-based workflows, but it's still better than not starting the sandbox transition.
+   This requires a beefier machine (more cores; more memory). You might opt for partially VM-based workflows, but it's still better than not starting the sandbox transition.
 
 **Alternatives**
 
@@ -35,7 +37,7 @@ It's possible, by -say- 2026, that such remote development platforms become the 
 ## Sandboxes available
 
 - [`rust`](rust/README.md); stable
-- [`rust+emb`](rust+emb/README.md)
+- [`rust+emb`](rust+emb/README.md); stable
 
 	Rust aimed at embedded (ESP32) development.
 
@@ -46,17 +48,15 @@ It's possible, by -say- 2026, that such remote development platforms become the 
 
 ## Requirements
 
-- Multipass 1.13.1 installed
-
-	Also **must work** with Multipass 1.14.
+- Multipass 1.14.0 installed
 
 The system is intended to work on all macOS, Linux and Windows hosts, but is only tested on macOS. If you find issues, please create an Issue!
 
 >Note: For Windows, Pro versions are recommended since only they provide Hyper-V (native) virtualization.
 
 <!-- Developed with:
-- macOS 14.6
-- Multipass 1.14.0
+- macOS 14.7
+- Multipass 1.14.1-RC1
 -->
 
 ## Usage
@@ -80,15 +80,15 @@ usbip (usbip-utils 2.0)
 To add a project folder to be shared between the host (macOS) and the Linux side:
 
 ```
-$ multipass mount -type native $(pwd) rust:/home/ubuntu/SOME
- 
-$ multipass start rust
+$ multipass stop rust-emb
+$ multipass mount --type native $(pwd) rust-emb:/home/ubuntu/SOME
+$ multipass start rust-emb
 ```
 
 Then:
 
 ```
-$ multipass shell rust
+$ multipass shell rust-emb
 ```
 
 You are now in an Ubuntu sandbox.
@@ -106,11 +106,11 @@ Multipass does not provide USB pass-through. However, you can reach USB devices 
 *tbd. If needed, a separate `docs/` file about this.*
 
 
-## WARNING ON MULTIPASS 1.14!!
+## 📛WARNING ON MULTIPASS 1.14.0!!
 
-It some some issues with mounts. Until those are resolved, you should:
+It has issues with mounts, and/or active instances in general. Until those are resolved, you should:
 
-- **AVOID** any maintenance-like commands on a running instance
+- **AVOID** any maintenance-like commands on a **running instance**
 
    This means no `multipass mount`, `umount`, `restart` or `delete`.
    
@@ -127,7 +127,7 @@ It some some issues with mounts. Until those are resolved, you should:
 
 A bit harsh, but.. since you can easily recreate the VM's from nothing (with `mp`), shouldn't be worth risking the stability. 
 
----
+## Troubleshooting
 
 IF you get such an error:
 
@@ -149,3 +149,12 @@ $ mp stop rust-emb
 ```
 
 ---
+
+If you get:
+
+```
+start failed: cannot connect to the multipass socket
+```
+
+Same thing. Don't try to be brave. Just restart the computer!
+

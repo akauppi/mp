@@ -5,20 +5,22 @@ set -e
 #   - Probe.rs > Installation
 #     -> https://probe.rs/docs/getting-started/installation/
 
-# DISABLED, until >= 0.24.1 is available
 #|INSTALL_URL=https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh
 #|  # 0.24 specific: https://github.com/probe-rs/probe-rs/releases/download/v0.24.0/probe-rs-tools-installer.sh
 #|
 #|curl --proto '=https' --tlsv1.2 -LsSf ${INSTALL_URL} | sh
 
 # Install FROM GITHUB (takes time!)
-# Reason: there's something in the handling of ESP32-C3 that's better in the _very specific revision_.
 #
-# Revisit this once '0.24.1' is out. tbd.
+# Reasons:
+#     There's an issue where ESP32-C3 seems to work against its spec, and this is a "wont-fix" for probe-rs
+#     See [here](https://github.com/probe-rs/probe-rs/issues/2818#issuecomment-2358791448). You *can* - if you want -
+#     work with C3 using a specific commit (6fee4b6).
 #
-# NOTE: Problems only affect C3; C6 is fine to use with stock 'probe-rs'.
+#     For _any_ ESP32 targets, the GitHub 'main' provides automatic 'chip' detection.
 #
-cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --rev 0fb93950 --locked --force
+#|cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --rev 6fee4b6 --locked --force
+cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --locked --force  # latest 'main'
 
 # Shell completion
 #

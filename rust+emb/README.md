@@ -3,12 +3,14 @@
 Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 
 - RISC V Rust compilation targets (C3, C6)
+- `usbip` client for USB/IP
 - [espflash](https://github.com/esp-rs/espflash)
 - [probe.rs](https://probe.rs/)
 - (optional) Xtensa Rust toolchain and targets
-- `nightly` toolchain, as long as it's needed/favoured by Embassy
 
->`usbip` client is already installed by `rust` recipe.
+<!-- tbd.
+- `nightly` toolchain, as long as it's needed/favoured by Embassy
+-->
 
 
 ## Overall
