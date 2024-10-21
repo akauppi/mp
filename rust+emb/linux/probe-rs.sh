@@ -5,6 +5,9 @@ set -e
 #   - Probe.rs > Installation
 #     -> https://probe.rs/docs/getting-started/installation/
 
+sudo DEBIAN_FRONTEND=noninteractive apt install -y \
+  pkg-config libudev-dev
+
 #|INSTALL_URL=https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh
 #|  # 0.24 specific: https://github.com/probe-rs/probe-rs/releases/download/v0.24.0/probe-rs-tools-installer.sh
 #|
@@ -20,7 +23,8 @@ set -e
 #     For _any_ ESP32 targets, the GitHub 'main' provides automatic 'chip' detection.
 #
 #|cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --rev 6fee4b6 --locked --force
-cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --locked --force  # latest 'main'
+cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --locked --force
+  # latest 'main'
 
 # Shell completion
 #

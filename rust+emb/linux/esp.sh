@@ -12,14 +12,3 @@ rustup target add riscv32imc-unknown-none-elf
   # ESP32-{C2|C3}
 rustup target add riscv32imac-unknown-none-elf
   # ESP32-{C6|H2}
-
-# espflash
-#
-# tbd. TAKES A LONG TIME: see if there's a faster ready-binary way?
-#
-sudo DEBIAN_FRONTEND=noninteractive apt install -y pkg-config libudev-dev
-cargo install espflash
-  # Needed by 'esp-hal' flashing
-
-# Write access needed for 'espflash' to flourish. ('/dev/ttyUSB0')
-sudo usermod -a -G dialout ${USER}
