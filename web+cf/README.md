@@ -13,14 +13,15 @@ Has:
 	>
 	>>*Wrangler is installed locally into each of your projects. This allows you and your team to use the same Wrangler version, control Wrangler versions for each project, and roll back to an earlier version of Wrangler, if needed.*
 	>
-	> We might disobey here, though. If you are okay always aiming at using the latest tools, and all your projects
+	> We might disobey here. If you are okay always aiming at using the latest tools, and all your projects
 	> are relatively active, it might not serve much to version control build/simulation tools, per each project.
 
-	<!-- #whisper
-	<p />
+<!-- #whisper
+	Also note: 
 	
-	>Also note: `wrangler` (globally installed) is 3x faster than `npx wrangler`, for each command.
-	
+	- `wrangler` (globally installed) is 3x faster than `npx wrangler`, for each command.
+
+	Installing *anything* with lots of small files in a mapped Multipass folder is slow. The author is not sure whether this is due to that - or something else.
 	<!_-- evidence:
    ```
     $ time wrangler whoami
@@ -37,7 +38,7 @@ Has:
     user	0m1.896s
     sys	0m1.429s
     ```
-	-->
+-->
 
 ## Prelude
 
@@ -84,7 +85,7 @@ You may try both and decide for yourself.
 
 #### B. Login with custom API tokens
 
-Using API tokens allows you *minute* control to what the CLI can - and can not - do. This author prefers this in the long run, since it's always good to run with the minimum set of access rights - especially if you deal with production systems.
+Using API tokens allows you *minute* control to what the CLI can - and can not - do. The author prefers this in the long run, since it's always good to run with the minimum set of access rights - especially if you deal with production systems.
 
 Also, some Cloudflare services (e.g. PubSub, as of May'24) [will request you](https://developers.cloudflare.com/pub-sub/guide/#3-fetch-your-credentials) to create a custom access token.
 

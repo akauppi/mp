@@ -19,7 +19,7 @@ set -e
   (sudo -- sh -c "apt-get install -y curl")
 
 # Last stable (even) version
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 
 sudo -- sh -c "apt-get install -y nodejs"
 

@@ -55,8 +55,8 @@ The system is intended to work on all macOS, Linux and Windows hosts, but is onl
 >Note: For Windows, Pro versions are recommended since only they provide Hyper-V (native) virtualization.
 
 <!-- Developed with:
-- macOS 14.7
-- Multipass 1.14.1-RC1
+- macOS 15.0
+- Multipass 1.14.1
 -->
 
 ## Usage

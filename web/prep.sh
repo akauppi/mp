@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Web development.
 #
 # Usage:
-#   $ [OMIT_SUMMARY=1] [MP_NAME=xxx] [MP_PARAMS=...] web/prep.sh
+#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] [USE_NATIVE_MOUNT=1] web/prep.sh
 #
 # Requires:
 #   - multipass
@@ -28,29 +28,25 @@ MP_PARAMS=${MP_PARAMS:---memory 4G --disk 5G --cpus 2}
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).
 #
-# tbd. Find another way to check whether a Multipass instance is running. This, without '2&>' prints some info (if it is)
-#     and with '2&>' allows things to proceed. May be a glitch.
-#
-#     e.g. "multipass list"; skip one line; take left columns; does it have "$MP_NAME"?
-#
-(multipass info $MP_NAME 2>/dev/null) && {
+(multipass info $MP_NAME >/dev/null 2>&1) && {
   echo "";
   echo "The VM '${MP_NAME}' is already running. This script only creates a new instance.";
   echo "Please change the 'MP_NAME' or 'multipass delete --purge' the earlier instance.";
   echo "";
-  exit 2
+  false
 } >&2
 
 # Launch and prime
 #
-multipass launch lts --name $MP_NAME $MP_PARAMS --mount ${MY_PATH}/linux:/home/ubuntu/.mp
+if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
+  multipass launch lts --name $MP_NAME $MP_PARAMS --mount ${MY_PATH}/linux:/home/ubuntu/.mp
+else
+  multipass launch lts --name $MP_NAME $MP_PARAMS
+  multipass stop $MP_NAME
+  multipass mount --type=native ${MY_PATH}/linux ${MP_NAME}:/home/ubuntu/.mp
+fi
 
-multipass exec $MP_NAME -- sudo sh -c "DEBIAN_FRONTEND=noninteractive apt update && apt -y upgrade"
-  #
-  # NOTE: This may bring up 'Newer kernel available' dialog. How to prevent that?
-
-# Restarting *may* be good because of service updates (note: better to do before the application installs)
-multipass restart $MP_NAME
+multipass exec $MP_NAME -- sudo sh -c "apt update && DEBIAN_FRONTEND=noninteractive apt -y upgrade"
 
 # Note: Changes to '.bashrc' do not need to be loaded in. When the use makes 'multipass shell', they'll get them.
 #
@@ -58,10 +54,22 @@ multipass exec $MP_NAME -- sh -c "~/.mp/node.sh"
 multipass exec $MP_NAME -- sh -c "~/.mp/env.sh"
 multipass exec $MP_NAME -- sh -c "~/.mp/gitignore.sh"
 
-# We don't need the VM-side scripts any more.
-multipass umount $MP_NAME
+if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
+  # We don't need the VM-side scripts any more.
+  multipass stop $MP_NAME   # antidote for 1.14.0
+  multipass umount $MP_NAME
 
-if [ "${OMIT_SUMMARY}" != 1 ]; then
+else
+  # Since we are going to be restarting, 'stop' takes no additional time.
+  multipass stop $MP_NAME
+  multipass umount $MP_NAME
+fi
+
+# Restart just-in-case
+multipass stop $MP_NAME
+multipass start $MP_NAME
+
+if [ "${SKIP_SUMMARY}" != 1 ]; then
   echo ""
   echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
   echo ""
@@ -69,7 +77,7 @@ fi
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c "node --version && npm --version"
-  #v20.14.0
-  #10.7.0
+  #v22.10.0
+  #10.9.0
 
 echo ""

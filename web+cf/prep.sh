@@ -33,12 +33,7 @@ MP_PARAMS=${MP_PARAMS:---memory 4G --disk 8G --cpus 2}
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).
 #
-# tbd. Find another way to check whether a Multipass instance is running. This, without '2&>' prints some info (if it is)
-#     and with '2&>' allows things to proceed. May be a glitch.
-#
-#     e.g. "multipass list"; skip one line; take left columns; does it have "$MP_NAME"?
-#
-(multipass info $MP_NAME 2>/dev/null) && {
+(multipass info $MP_NAME >/dev/null 2>&1) && {
   echo "";
   echo "The VM '${MP_NAME}' is already running. This script only creates a new instance.";
   echo "Please change the 'MP_NAME' or 'multipass delete --purge' the earlier instance.";
@@ -48,14 +43,12 @@ MP_PARAMS=${MP_PARAMS:---memory 4G --disk 8G --cpus 2}
 
 # Build the foundation
 #
-OMIT_SUMMARY=1 MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS ${MY_PATH}/../web/prep.sh
+SKIP_SUMMARY=1 MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS ${MY_PATH}/../web/prep.sh
 
 # Install wrangler CLI
 #
 multipass exec $MP_NAME -- sh -c "npm install -g wrangler"
 
-# tbd. foundation could have a 'quiet' flag
-#
 echo ""
 echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
 echo ""
@@ -66,7 +59,7 @@ echo ""
 #     Alternative: 'sh -c "npx wrangler version"'
 #
 multipass exec $MP_NAME -- bash -c -i "wrangler --version"
-  # ⛅️ wrangler 3.60.3
+  # ⛅️ wrangler 3.83.0
   #-------------------
 
 echo ""

@@ -39,7 +39,7 @@ Cloud CLIs often use a browser dance.
    $ sudo ssh -i /var/root/Library/Application\ Support/multipassd/ssh-keys/id_rsa -L 8976:localhost:8976 ubuntu@192.168.64.92
    ```
 
-   Keep the resulting `ssh` session open; port forwarding is valid as long as it is. `|**|`
+   Keep the resulting `ssh` session open; port forwarding is valid as long as it is. <sup>`|**|`</sup>
 
    The IP is naturally the IP of your local VM.
    
