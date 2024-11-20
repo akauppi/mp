@@ -97,20 +97,28 @@ Visit Cloudflare > Dashboard > `My Profile` > [API tokens](https://dash.cloudfla
 
 >![](.images/custom-api-token.png)         
 
-Notice that the first pull-down menu works as a tree structure for the permissions.
+**Notice that the first pull-down menu works as a tree structure for the permissions.** If you don't find something (e.g. "membership") under `Account`, change to `User`.
 
-Give permissions that you need. You will be able to edit these later, for the same token.
+Here are permissions needed for deploying a Cloudflare Pages app (as of Nov'24). You will be able to edit these later, for the same token.
 
-|           | permission                  | can     | comment                                       |
-|-----------|-----------------------------|---------|-----------------------------------------------|
-| `Account` | `Account Settings`          | `Read`  |                                               |
-| `Account` | `Access: Apps and Policies` | `Edit`  |                                               |
-| `User`    | `User Details`              | `Read`  | `wrangler whoami` needs this                  |
-| `User`    | `Memberships`               | `Read` | `/membership` API; SvelteKit adapter needs it |
+|           | permission                  | can    | comment                                                     |
+|-----------|-----------------------------|--------|-------------------------------------------------------------|
+| `Account` | `Account Settings`          | `Read` |                                                             |
+| `Account` | `Access: Apps and Policies` | `Edit` |                                                             |
+| `User`    | `User Details`              | `Read` | `wrangler whoami` needs this                                |
+| `User`    | `Memberships`               | `Edit` | `/membership` API; SvelteKit deployment                     |
+| `Account` | `Cloudflare Pages`          | `Edit` | `/accounts/{id}/pages/projects/{project-id}` API; SvelteKit |
 
 <!--
 |...|	do not be afraid to add more lines, above
 -->
+
+In addition, you may want to change `Account Resources` to just your current account.
+
+>Note: 
+>If you later come to edit the permissions, **make sure to `Continue to summary` and `Update token`:
+>
+> ![](.images/update-token.png) 
 
 Complete the creation and you'll get a token like `Blah0[...]fuchS`.
 
