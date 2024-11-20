@@ -1,6 +1,6 @@
 # Web + Cloudflare development
 
-For Web development with Cloudflare as the platform.
+For Web development with [Cloudflare](https://www.cloudflare.com/developer-platform/) as the platform.
    
 Has:
 
@@ -85,7 +85,7 @@ You may try both and decide for yourself.
 
 #### B. Login with custom API tokens
 
-Using API tokens allows you *minute* control to what the CLI can - and can not - do. The author prefers this in the long run, since it's always good to run with the minimum set of access rights - especially if you deal with production systems.
+Using API tokens allows you *minute* control to what the CLI can and can not do. The author prefers this in the long run, since it's always good to run with the minimum set of access rights - especially if you deal with production systems.
 
 Also, some Cloudflare services (e.g. PubSub, as of May'24) [will request you](https://developers.cloudflare.com/pub-sub/guide/#3-fetch-your-credentials) to create a custom access token.
 
@@ -101,13 +101,15 @@ Notice that the first pull-down menu works as a tree structure for the permissio
 
 Give permissions that you need. You will be able to edit these later, for the same token.
 
-||permission|can|comment|
-|---|---|---|---|
-|`User`|`User Details`|`Read`|`wrangler whoami` needs this|
-|...|
+|           | permission                  | can     | comment                                       |
+|-----------|-----------------------------|---------|-----------------------------------------------|
+| `Account` | `Account Settings`          | `Read`  |                                               |
+| `Account` | `Access: Apps and Policies` | `Edit`  |                                               |
+| `User`    | `User Details`              | `Read`  | `wrangler whoami` needs this                  |
+| `User`    | `Memberships`               | `Read` | `/membership` API; SvelteKit adapter needs it |
 
-<!-- tbd.
-><font color=orange>*tbd.* Add more lines above, once we see where they are needed!</font>
+<!--
+|...|	do not be afraid to add more lines, above
 -->
 
 Complete the creation and you'll get a token like `Blah0[...]fuchS`.
