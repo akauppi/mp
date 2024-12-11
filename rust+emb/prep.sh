@@ -67,13 +67,19 @@ if [ "${XTENSA}" == 1 ]; then
   multipass exec $MP_NAME -- sh -c ". ~/.mp2/espup.sh"
 fi
 
+if [ -f ~/.mp2/custom.sh ]; then
+  multipass exec $MP_NAME -- sh -c ". ~/.mp2/custom.sh"
+fi
+
 # Multipass 1.14.0 absolutely NEEDS us to stop the instance first. Otherwise, following the 'umount' (in 'multipass info'):
 # <<
 #   info failed: cannot connect to the multipass socket
 # <<
 multipass stop $MP_NAME
 multipass umount $MP_NAME
-sleep 1   # TEMP/Does this help 'start' to succeed?
+sleep 1
+#sleep 3   # TEMP/Does this help 'start' to succeed? // '1' wasn't enough (1.14.1)
+#          # NOTE: Perhaps this is due to Cloudflare WARP being active???  :)
 multipass start $MP_NAME
   # ^-- THIS line has had problems:
   #   <<

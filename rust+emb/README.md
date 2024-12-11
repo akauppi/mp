@@ -106,6 +106,11 @@ $ rustup update
 $ cargo install probe-rs-tools
 ```
 
+### After kernel update
+
+You _must_ update `linux-modules-extra-$(uname -r)` _manually_ when kernel changes. See the instructions in [`rust+emb/linux/usbip-drivers.sh`](./rust+emb/linux/usbip-drivers.sh).
+
+
 ## References
 
 - [`probe-rs` docs](https://probe.rs/docs/)
