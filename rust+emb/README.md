@@ -110,6 +110,11 @@ $ cargo install probe-rs-tools
 
 You _must_ update `linux-modules-extra-$(uname -r)` _manually_ when kernel changes. See the instructions in [`rust+emb/linux/usbip-drivers.sh`](./rust+emb/linux/usbip-drivers.sh).
 
+>Note: You may also need to restart the VM, i.e. (on the host):
+>
+>```
+>$ multipass stop rust-emb; multipass shell rust-emb
+>```
 
 ## References
 

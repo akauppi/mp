@@ -55,8 +55,8 @@ The system is intended to work on all macOS, Linux and Windows hosts, but is onl
 >Note: For Windows, Pro versions are recommended since only they provide Hyper-V (native) virtualization.
 
 <!-- Developed with:
-- macOS 15.0
-- Multipass 1.14.1
+- macOS 15.1.1
+- Multipass 1.15.0
 -->
 
 ## Usage
@@ -106,7 +106,9 @@ Multipass does not provide USB pass-through. However, you can reach USB devices 
 *tbd. If needed, a separate `docs/` file about this.*
 
 
-## 📛WARNING ON MULTIPASS 1.14.0!!
+## 📛WARNING ON MULTIPASS 1.14.x!!
+
+>Have not checked whether this applies to 1.15.0 as well. Safe to assume it does.
 
 It has issues with mounts, and/or active instances in general. Until those are resolved, you should:
 

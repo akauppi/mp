@@ -16,13 +16,8 @@ sudo DEBIAN_FRONTEND=noninteractive apt install -y \
 # Install FROM GITHUB (takes time!)
 #
 # Reasons:
-#     There's an issue where ESP32-C3 seems to work against its spec, and this is a "wont-fix" for probe-rs
-#     See [here](https://github.com/probe-rs/probe-rs/issues/2818#issuecomment-2358791448). You *can* - if you want -
-#     work with C3 using a specific commit (6fee4b6).
+#     - GitHub 'main' provides automatic 'chip' detection.  (0.24 released May'24 doesn't)
 #
-#     For _any_ ESP32 targets, the GitHub 'main' provides automatic 'chip' detection.
-#
-#|cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --rev 6fee4b6 --locked --force
 cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --locked --force
   # latest 'main'
 
