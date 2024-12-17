@@ -8,18 +8,20 @@ set -e
 sudo DEBIAN_FRONTEND=noninteractive apt install -y \
   pkg-config libudev-dev
 
-#|INSTALL_URL=https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh
-#|  # 0.24 specific: https://github.com/probe-rs/probe-rs/releases/download/v0.24.0/probe-rs-tools-installer.sh
-#|
-#|curl --proto '=https' --tlsv1.2 -LsSf ${INSTALL_URL} | sh
+# Install a released version
+#
+INSTALL_URL=https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.sh
+  # 0.24 specific: https://github.com/probe-rs/probe-rs/releases/download/v0.24.0/probe-rs-tools-installer.sh
+
+curl --proto '=https' --tlsv1.2 -LsSf ${INSTALL_URL} | sh
 
 # Install FROM GITHUB (takes time!)
 #
 # Reasons:
 #     - GitHub 'main' provides automatic 'chip' detection.  (0.24 released May'24 doesn't)
 #
-cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --locked --force
-  # latest 'main'
+#|cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --locked --force
+#|  # latest 'main'
 
 # Shell completion
 #

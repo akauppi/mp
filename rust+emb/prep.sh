@@ -77,11 +77,11 @@ fi
 # <<
 multipass stop $MP_NAME
 multipass umount $MP_NAME
-sleep 1
-#sleep 3   # TEMP/Does this help 'start' to succeed? // '1' wasn't enough (1.14.1)
-#          # NOTE: Perhaps this is due to Cloudflare WARP being active???  :)
+sleep 6
+  # TEMP/Does this help 'start' to succeed? // '1' wasn't enough (1.14.1)
+
 multipass start $MP_NAME
-  # ^-- THIS line has had problems:
+  # ^-- THIS line has had problems (still with 1.15.0):
   #   <<
   #   start failed: cannot connect to the multipass socket
   #   <<
@@ -98,7 +98,7 @@ echo ""
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c ". .cargo/env && probe-rs --version && usbip version"
-  # probe-rs 0.24.0 (git commit: ...)
+  # probe-rs 0.25.0 (git commit: 0b989aa)
   # usbip (usbip-utils 2.0)
 
 echo ""
