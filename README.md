@@ -55,7 +55,7 @@ The system is intended to work on all macOS, Linux and Windows hosts, but is onl
 >Note: For Windows, Pro versions are recommended since only they provide Hyper-V (native) virtualization.
 
 <!-- Developed with:
-- macOS 15.1.1
+- macOS 15.2
 - Multipass 1.15.0
 -->
 
@@ -160,3 +160,12 @@ start failed: cannot connect to the multipass socket
 
 Same thing. Don't try to be brave. Just restart the computer!
 
+---
+
+If you get:
+
+```
+launch failed: Remote "" is unknown or unreachable.
+```
+
+Same thing. Just restarting the daemon was enough.

@@ -59,7 +59,7 @@ echo ""
 #     Alternative: 'sh -c "npx wrangler version"'
 #
 multipass exec $MP_NAME -- bash -c -i "wrangler --version"
-  # ⛅️ wrangler 3.83.0
+  # ⛅️ wrangler 3.96.0
   #-------------------
 
 echo ""

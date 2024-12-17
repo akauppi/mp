@@ -56,9 +56,8 @@ multipass exec $MP_NAME -- sh -c "~/.mp/gitignore.sh"
 
 if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
   # We don't need the VM-side scripts any more.
-  multipass stop $MP_NAME   # antidote for 1.14.0
+  multipass stop $MP_NAME
   multipass umount $MP_NAME
-
 else
   # Since we are going to be restarting, 'stop' takes no additional time.
   multipass stop $MP_NAME
@@ -77,7 +76,7 @@ fi
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c "node --version && npm --version"
-  #v22.10.0
+  #v22.12.0
   #10.9.0
 
 echo ""
