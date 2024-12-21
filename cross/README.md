@@ -153,9 +153,13 @@ probe-rs 0.25.0 (git commit: v0.25.0-5-g9a767f2-modified)
 
 Looks good!
 
-### 5. Find a good place for it..
+### 5. RPi target setup
 
-Let's move it to `~/bin` (or any destination you fancy), and add that to the `PATH`:
+We now have the binary on the Raspberry Pi target. Let's move it to a comfortable place and set up the environment (access rights etc.).
+
+#### Comfortable location
+
+Move the binary to `~/bin` (or any destination you fancy), and add that to the `PATH`:
 
 ```
 user@rpi:~ $ mkdir bin
@@ -169,6 +173,38 @@ user@rpi:~ $ echo >> ~/.bashrc 'export PATH="$PATH:$HOME/bin"'
 ```
 user@rpi:~ $ source ~/.bashrc
 ```
+
+#### `udev` configuration
+
+The rest of the steps arise from the tail of [`../rust+emb/linux/probe-rs.sh`](../rust+emb/linux/probe-rs.sh).
+
+The easiest might be to have a temporary script on RPi, such as:
+
+```
+#!/bin/sh
+
+_RULES_SOURCE_URL=https://probe.rs/files/69-probe-rs.rules
+_RULES_FN=$(basename ${_RULES_SOURCE_URL})
+_RULES_TARGET=/etc/udev/rules.d/${_RULES_FN}
+_RULES_TMP=/tmp/${_RULES_FN}
+
+curl --proto '=https' --tlsv1.2 -LsSf ${_RULES_SOURCE_URL} -o ${_RULES_TMP}
+sudo mv ${_RULES_TMP} ${_RULES_TARGET}
+
+sudo udevadm control --reload
+
+sudo udevadm trigger
+
+#sudo usermod -a -G plugdev ${USER}
+```
+
+Then:
+
+```
+user@rpi:~ $ ./{temp-name}.sh && echo OK
+OK
+```
+
 
 ## Test with a development board
 
@@ -190,6 +226,40 @@ The following debug probes were found:
 Now, one should be able to do all the normal `probe-rs run` etc. commands, using a Raspberry Pi. The idea is that a main computer would proxy such commands to the RPi, providing *air-gapping* from a development board but also not falling victim to a slow USB/IP flashing.
 
 Such steps are beyond the concerns of this repository, however. We showed how to cross-compile Rust binaries to an architecture where Rust toolchain couldn't (presumably; did not even try!) be set up, using Multipass. That was the goal of this folder.
+
+## Flashing
+
+Move some compiled file to the RPi, and try:
+
+```
+user@rpi:~ $ probe-rs run --log-format '{t:dimmed} [{L:bold}] {s}' a
+      Erasing ✔ 100% [####################] 384.00 KiB @ 292.17 KiB/s (took 1s)
+  Programming ⠤  94% [###################-] 156.62 KiB @  27.95 KiB/s (ETA 0s)    
+```
+
+>Note: Using USB/IP, the flashing speed is often < 2 KiB/s. We've reached a 15x improvement (or down from 2min -> 6s) by running `probe-rs` near the embedded device.
+
+## Integration with your build workflow
+
+This is beyond this folder.
+
+## Clean-up
+
+Once you have placed `probe-rs` on the target, there's likely no urgent need for the `cross` VM. You can remove everything by:
+
+<!-- tbd. Would be nice to use `cross`, instead of `docker`?
+```
+$ multipass stop cross
+$ multipass delete --purge cross
+```
+-->
+
+```
+$ multipass stop docker
+$ multipass delete --purge docker
+```
+
+This releases some 10GB of your disk space.
 
 
 ## References
