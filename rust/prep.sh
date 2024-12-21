@@ -56,9 +56,6 @@ multipass exec $MP_NAME -- sudo sh -c "apt update && DEBIAN_FRONTEND=noninteract
 multipass exec $MP_NAME -- sh -c ". ~/.mp/rustup.sh"
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp/rustfmt.sh"
 
-# tbd. Make this steerable by.. 'CARGO_GENERATE=1' ('rust+emb' might want to always have it)
-#multipass exec $MP_NAME -- sh -c ". ~/.mp/cargo-generate.sh"
-
 multipass exec $MP_NAME -- sh -c ". ~/.mp/shared-target.sh"
 
 if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
