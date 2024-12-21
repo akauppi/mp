@@ -1,8 +1,6 @@
 # Cross compiling with Rust
 
-This folder is for cross-compiling Rust binaries (such as the `probe-rs` tool) to the [Raspberry Pi 3B](https://www.raspberrypi.com/products/raspberry-pi-3-model-b/) platform. This platform (though having 1GB of RAM) is not sufficient for Rust compiler stack
-
-You can apply this setup for cross-compiling other such tools, of course.
+This folder is for cross-compiling Rust binaries (such as the `probe-rs` tool) to the [Raspberry Pi 3B](https://www.raspberrypi.com/products/raspberry-pi-3-model-b/) platform. This platform (though having 1GB of RAM) is not sufficient for Rust compiler stack. You can also adopt this setup for cross-compiling other such tools, of course.
 
 Unlike the other *recipies* in this repo, this one is provided as manual steps. This is because the steps are one-time-only, and the end result is an executable, not a VM.
 
@@ -10,7 +8,6 @@ Unlike the other *recipies* in this repo, this one is provided as manual steps. 
 ## Requirements
 
 - Multipass installed and healthy
-
 
 
 ## Steps
@@ -26,8 +23,8 @@ $ multipass shell docker
 
 >```
 >[docker]$ docker --version
-Docker version 27.4.1, build b9d17ea
-```
+>Docker version 27.4.1, build b9d17ea
+>```
 
 ### 2. Install tools
 
@@ -57,7 +54,7 @@ $ multipass shell docker
 
 >```
 >[docker]$ cargo --version
-cargo 1.83.0 (5ffbef321 2024-10-29)
+>cargo 1.83.0 (5ffbef321 2024-10-29)
 >```
 
 
@@ -103,26 +100,18 @@ We now have a `crossimage` Docker image built:
 
 >```
 >$ docker images
-REPOSITORY     TAG       IMAGE ID       CREATED          SIZE
-crossimage     latest    87cdd66eebcc   32 minutes ago   1.04GB
+>REPOSITORY     TAG       IMAGE ID       CREATED          SIZE
+>crossimage     latest    87cdd66eebcc   32 minutes ago   1.04GB
 >[...]
 >```
 
 #### 3.2 Install and use `cross`
 
-<!--
->**SKIP THIS**
->```
->[docker]$ cat >> Cargo.toml <<EOF
->[target.armv7-unknown-linux-gnueabihf]
->image = "crossimage"
->EOF
->```
--->
-
 ```
 [docker]$ cargo install cross
 ```
+
+>Note: Unlike the official instructions, adding lines to `Cross.toml` does not seem to be needed.
 
 ```
 [docker]$ cross build -p probe-rs-tools --release --target=armv7-unknown-linux-gnueabihf
@@ -194,9 +183,12 @@ sudo mv ${_RULES_TMP} ${_RULES_TARGET}
 sudo udevadm control --reload
 
 sudo udevadm trigger
-
-#sudo usermod -a -G plugdev ${USER}
 ```
+
+<!-- #whisper
+#sudo usermod -a -G plugdev ${USER}
+This didn't seem to be needed (`rust+emb` setup has it).
+-->
 
 Then:
 
@@ -211,13 +203,6 @@ OK
 Insert a USB cable to a dev board
 
 ```
-$ lsusb
-[...]
-Bus 001 Device 006: ID 303a:1001 Espressif USB JTAG/serial debug unit
-[...]
-```
-
-```
 $ probe-rs list
 The following debug probes were found:
 [0]: ESP JTAG -- 303a:1001:54:32:04:44:74:C0 (EspJtag)
@@ -225,7 +210,7 @@ The following debug probes were found:
 
 Now, one should be able to do all the normal `probe-rs run` etc. commands, using a Raspberry Pi. The idea is that a main computer would proxy such commands to the RPi, providing *air-gapping* from a development board but also not falling victim to a slow USB/IP flashing.
 
-Such steps are beyond the concerns of this repository, however. We showed how to cross-compile Rust binaries to an architecture where Rust toolchain couldn't (presumably; did not even try!) be set up, using Multipass. That was the goal of this folder.
+Such steps are beyond the concerns of this repository, however..
 
 ## Flashing
 
@@ -241,18 +226,11 @@ user@rpi:~ $ probe-rs run --log-format '{t:dimmed} [{L:bold}] {s}' a
 
 ## Integration with your build workflow
 
-This is beyond this folder.
+This is beyond this folder's aims!
 
 ## Clean-up
 
-Once you have placed `probe-rs` on the target, there's likely no urgent need for the `cross` VM. You can remove everything by:
-
-<!-- tbd. Would be nice to use `cross`, instead of `docker`?
-```
-$ multipass stop cross
-$ multipass delete --purge cross
-```
--->
+Once you have placed `probe-rs` on the target, there's likely no need for the `docker` VM to be kept around. You can remove it by:
 
 ```
 $ multipass stop docker
