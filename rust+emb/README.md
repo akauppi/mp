@@ -3,7 +3,6 @@
 Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 
 - RISC V Rust compilation targets (C3, C6)
-- [espflash](https://github.com/esp-rs/espflash)
 - [probe.rs](https://probe.rs/) remote connection to a computer with `probe-rs` installed
 - (optional) Xtensa Rust toolchain and targets
 
