@@ -57,8 +57,13 @@ else
 fi
 
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/esp.sh"
-multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/probe-rs.sh"
-multipass exec $MP_NAME -- sh -c ". ~/.mp2/usbip-drivers.sh"
+
+# 'probe-rs' remote
+multipass exec $MP_NAME -- sh -c ". ~/.mp2/probe-rs-remote.sh"
+
+# 'probe-rs' over USB/IP
+#multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/probe-rs.sh"
+#multipass exec $MP_NAME -- sh -c ". ~/.mp2/usbip-drivers.sh"
 
 # tbd. if you need it, make optional  [UNPOLISHED]
 # multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/nightly.sh"
@@ -97,8 +102,7 @@ echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f
 echo ""
 
 # Test and show the versions
-multipass exec $MP_NAME -- sh -c ". .cargo/env && probe-rs --version && usbip version"
+multipass exec $MP_NAME -- sh -c ". .cargo/env && probe-rs --version"
   # probe-rs 0.25.0 (git commit: 0b989aa)
-  # usbip (usbip-utils 2.0)
 
 echo ""

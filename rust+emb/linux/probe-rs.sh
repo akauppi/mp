@@ -16,10 +16,6 @@ INSTALL_URL=https://github.com/probe-rs/probe-rs/releases/latest/download/probe-
 curl --proto '=https' --tlsv1.2 -LsSf ${INSTALL_URL} | sh
 
 # Install FROM GITHUB (takes time!)
-#
-# Reasons:
-#     - GitHub 'main' provides automatic 'chip' detection.  (0.24 released May'24 doesn't)
-#
 #|cargo install probe-rs-tools --git https://github.com/probe-rs/probe-rs --locked --force
 #|  # latest 'main'
 

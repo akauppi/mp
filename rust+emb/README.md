@@ -3,9 +3,8 @@
 Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 
 - RISC V Rust compilation targets (C3, C6)
-- `usbip` client for USB/IP
 - [espflash](https://github.com/esp-rs/espflash)
-- [probe.rs](https://probe.rs/)
+- [probe.rs](https://probe.rs/) remote connection to a computer with `probe-rs` installed
 - (optional) Xtensa Rust toolchain and targets
 
 <!-- tbd.
@@ -15,15 +14,12 @@ Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 
 ## Overall
 
-![](.images/diagram.png)
+![](.images/probe-rs-setup.png)
 
-You'll be connecting the development kit (e.g. [ESP32-C3-DevKitM-1](https://docs.espressif.com/projects/esp-idf/en/v5.2/esp32c3/hw-reference/esp32c3/user-guide-devkitm-1.html#esp32-c3-devkitm-1)) to *another* computer; either a Raspberry Pi or a PC, and passing the USB information over to the Multipass VM via USB/IP protocol. We'll give details on how to set this up, below.
 
-This gives the benefit that you don't need to physically connect your development board (with custom electronic experiments) to your primary computer.
+You'll be connecting the development kit (e.g. [ESP32-C3-DevKitM-1](https://docs.espressif.com/projects/esp-idf/en/v5.2/esp32c3/hw-reference/esp32c3/user-guide-devkitm-1.html#esp32-c3-devkitm-1)) to *another* computer; either a Raspberry Pi or a PC, which needs to have `probe-rs` installed. 
 
->**Using on just one computer**
->
->If you have a PC (Windows 10 or Linux), this can be done. Just follow the same instructions below. For Mac, the author is not aware of good `usbipd` host software.
+This gives the benefit that you don't need to physically connect your development board (with custom electronic experiments) to your primary computer. <small>*Plus, with using Multipass VM's not having USB sharing, you'll need a way to reach for such devices over Ethernet/WLAN, anyways.*</small>
 
 
 ## Prelude
@@ -49,29 +45,20 @@ To enable Xtensa targets, add `XTENSA=1` before the command. Be aware that this 
 
 ## Preparing the target device
 
-Multipass does not support passing of USB devices from host to VM, so we use USB/IP (USB-over-IP) instead. 
+Follow the instructions in the [`probe-rs-remote`](https://github.com/lure23/probe-rs-remote) (GitHub) repo, to set up the remote machine.
 
-‼️See [ESP32-Mac](https://github.com/lure23/ESP32-Mac?tab=readme-ov-file#alternative-b-connecting-the-device-through-windows) for instructions on how to set up `usbipd` hosting.
+Before using `probe-rs`, edit the `~/.bashrc` within the VM image, to have it point to the correct destination. Other than this, `probe-rs` remote will be installed on your VM, automatically.
 
-The instructions below are on the ESP32-C3 DevKit-M1 board. If you have another board, the steps should be similar but different. Consult its manual!
+```
+$ nano ~/.bashrc
+...
+# EDIT AND UNCOMMENT THIS
+#export PROBE_RS_REMOTE=probe-rs@192.168.1.199
+```
 
-With the help of that repo:
+<!-- tbd. `prep` *SHOULD* ask for the destination user/IP right up front, interactively! -->
 
-- Have USB/IP set up between the PC/RPi and your VM
-- See that you can reach the device via `probe-rs`
 
-<!-- tbd. give test instructions for each of the above steps
--->
-
-<!-- tbd. Move much of this stuff to (revised `ESP32-Mac` - it deserves to be there!
-
-### Connect the devkit (USB); start USB/IP sharing
-
-Connect the development board to your PC/RPi. If it needs drivers, install them.
-
->See [Establish Serial Connection with ESP32](https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/establish-serial-connection.html&ved=2ahUKEwikh-etgLWGAxUPJRAIHdwSDVwQFnoECBUQAQ&usg=AOvVaw047kPSwHcYVvG7s8epqZTL) (Espressif docs)
-
--->
 
 ## Mounting work folders
 
@@ -115,6 +102,11 @@ You _must_ update `linux-modules-extra-$(uname -r)` _manually_ when kernel chang
 >```
 >$ multipass stop rust-emb; multipass shell rust-emb
 >```
+
+### `probe-rs-remote`
+
+`~/bin/probe-rs-remote` script currently needs manual care, if you wish to bring updates to it. See [`linux/probe-rs-remote.sh`](linux/probe-rs-remote.sh).
+
 
 ## References
 
