@@ -6,7 +6,6 @@ Has:
 
 - `rustc`
 - `cargo`
-- + `usbip` client installed
 
 Updating (within the sandbox):
    

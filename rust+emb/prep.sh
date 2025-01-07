@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Rust Embedded (Embassy) development.
 #
 # Usage:
-#   $ [XTENSA=1] [MP_NAME=xxx] [MP_PARAMS=...] [USE_NATIVE_MOUNT=0|1] rust+emb/prep.sh
+#   $ [XTENSA=1] [MP_NAME=xxx] [MP_PARAMS=...] [USE_NATIVE_MOUNT=0|1] [PROBE_RS_REMOTE={probe-rs@192.168.1.199}] rust+emb/prep.sh
 #
 # Requires:
 #   - multipass
@@ -22,6 +22,9 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 18G --cpus 3}
   #
   # Note: May be more than the base 'rust' VM would use; especially disk space.
 	#   Doing actual development (e.g. Embassy) has shown ~10GB to fall short.
+
+# Wasn't able to do interactive prompt on macOS (bash 3.2), but.. this should be fine.
+PROBE_RS_REMOTE=${PROBE_RS_REMOTE:-probe-rs@192.168.1.199}
 
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).
@@ -56,6 +59,10 @@ else
   multipass start $MP_NAME
 fi
 
+# Create '~/bin' and add to PATH (for some/any scripts to use it)
+#
+multipass exec $MP_NAME -- sh -c 'install -d ~/bin && echo PATH="$PATH:$HOME/bin" >> ~/.bashrc'
+
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/esp.sh"
 
 # 'probe-rs' remote
@@ -72,8 +79,10 @@ if [ "${XTENSA}" == 1 ]; then
   multipass exec $MP_NAME -- sh -c ". ~/.mp2/espup.sh"
 fi
 
-if [ -f ~/.mp2/custom.sh ]; then
-  multipass exec $MP_NAME -- sh -c ". ~/.mp2/custom.sh"
+multipass exec $MP_NAME -- sh -c "echo '\nexport PROBE_RS_REMOTE=\"$PROBE_RS_REMOTE\"' >> ~/.bashrc"
+
+if [ -f ~/.mp2/custom.bashrc.sh ]; then
+  multipass exec $MP_NAME -- sh -c "cat ~/.mp2/custom.bashrc.sh >> ~/.bashrc"
 fi
 
 # Multipass 1.14.0 absolutely NEEDS us to stop the instance first. Otherwise, following the 'umount' (in 'multipass info'):
@@ -82,27 +91,30 @@ fi
 # <<
 multipass stop $MP_NAME
 multipass umount $MP_NAME
-sleep 6
-  # TEMP/Does this help 'start' to succeed? // '1' wasn't enough (1.14.1)
+sleep 4
 
-multipass start $MP_NAME
-  # ^-- THIS line has had problems (still with 1.15.0):
-  #   <<
-  #   start failed: cannot connect to the multipass socket
-  #   <<
+# LEAVE VM stopped; the user will likely map folders, next.
+cat <<EOF
+🍇 Your VM is ready.
+- 'probe-rs' is directed to reach '$PROBE_RS_REMOTE' over ssh.
+  You can change this by editing '~/.bashrc' within the VM.
 
-# Clean the '/home/ubuntu/target' folder. It has ~1.2GB of build artefacts we don't need any more.
-#
-multipass exec $MP_NAME -- sh -c "du -h -d 1 target; rm -rf ~/target/release"
-  #1.2G	target/release
-  #1.2G	target
+Next:
+- map local folders with 'multipass mount --type=native {local path} $MP_NAME:/home/ubuntu/{remote path}'
+- launch the VM with 'multipass shell $MP_NAME'
 
-echo ""
-echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
-echo ""
+EOF
 
-# Test and show the versions
-multipass exec $MP_NAME -- sh -c ". .cargo/env && probe-rs --version"
-  # probe-rs 0.25.0 (git commit: 0b989aa)
+#---  // remove the tail, "one day"
 
-echo ""
+# Disabled (7-Jan-25): only '4.0K' reported (since we don't build 'probe-rs', any more)
+#|# Clean the '/home/ubuntu/target' folder. It has ~1.2GB of build artefacts we don't need any more.
+#|#
+#|multipass exec $MP_NAME -- sh -c "du -h -d 1 target; rm -rf ~/target/release"
+#|  #1.2G	target/release
+#|  #1.2G	target
+
+# Disabled (7-Jan-25): IP isn't important for Rust (like it is for web); also, we'd need to be running to get it (otherwise '--').
+#|echo ""
+#|echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
+#|echo ""

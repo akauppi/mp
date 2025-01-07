@@ -1,10 +1,9 @@
-# Rust development with Embassy
+# Rust for embedded development
 
 Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 
-- RISC V Rust compilation targets (C3, C6)
-- [probe.rs](https://probe.rs/) remote connection to a computer with `probe-rs` installed
-- (optional) Xtensa Rust toolchain and targets
+- Rust compilation targets (ESP32-C3, ESP32-C6)
+- [probe-rs-remote](https://github.com/lure23/probe-rs-remote) connection to a computer with [`probe-rs`](https://probe.rs) installed
 
 <!-- tbd.
 - `nightly` toolchain, as long as it's needed/favoured by Embassy
@@ -16,47 +15,39 @@ Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 ![](.images/probe-rs-setup.png)
 
 
-You'll be connecting the development kit (e.g. [ESP32-C3-DevKitM-1](https://docs.espressif.com/projects/esp-idf/en/v5.2/esp32c3/hw-reference/esp32c3/user-guide-devkitm-1.html#esp32-c3-devkitm-1)) to *another* computer; either a Raspberry Pi or a PC, which needs to have `probe-rs` installed. 
+You'll be connecting the development kit (e.g. [ESP32-C6-DevKitC](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c6/esp32-c6-devkitc-1/user_guide.html#esp32-c6-devkitc-1-v1-2)) to *another* computer; either a Raspberry Pi or a Linux PC, which needs to have `probe-rs` installed.
 
-This gives the benefit that you don't need to physically connect your development board (with custom electronic experiments) to your primary computer. <small>*Plus, with using Multipass VM's not having USB sharing, you'll need a way to reach for such devices over Ethernet/WLAN, anyways.*</small>
+This gives the benefit that your development board is *airgapped* from the development system, where you run your IDE etc. If something were to go wrong with electronics (read: SMOKE!), you'll appreciate this!
+
+><small>As a side note, with Multipass we'd need some way of passing USB over IP anyhow, since Multipass does not support USB device mapping.</small>
 
 
-## Prelude
+## Preparations
 
-See [`../rust/README.md`](../rust/README.md) for instructions on generic tooling.
+If you already have the assisting computer (Raspberry Pi) set up, great! Feed its `ssh` user and IP to the creating script, below.
+
+If you don't, you can either:
+
+- visit [`probe-rs-remote`](https://github.com/lure23/probe-rs-remote) 
+- ..or let the default (`probe-rs@192.168.1.199`) be used for now and edit it later in VM's `~/.bashrc`.
+
 
 ## Usage
 
 Create the VM by:
 
 ```
-$ rust+emb/prep.sh
+$ [PROBE_RS_REMOTE={user@ip}] rust+emb/prep.sh
 ...
-Multipass IP (rust-emb): 192.168.64.101
+VM is ready.
 
-probe-rs 0.24.0 (git commit: 6fc653a)
 ```
 
+<!-- #hidden
 ### Xtensa based chips
 
 To enable Xtensa targets, add `XTENSA=1` before the command. Be aware that this consumes ~1.5GiB more disk space from the image.
-
-
-## Preparing the target device
-
-Follow the instructions in the [`probe-rs-remote`](https://github.com/lure23/probe-rs-remote) (GitHub) repo, to set up the remote machine.
-
-Before using `probe-rs`, edit the `~/.bashrc` within the VM image, to have it point to the correct destination. Other than this, `probe-rs` remote will be installed on your VM, automatically.
-
-```
-$ nano ~/.bashrc
-...
-# EDIT AND UNCOMMENT THIS
-#export PROBE_RS_REMOTE=probe-rs@192.168.1.199
-```
-
-<!-- tbd. `prep` *SHOULD* ask for the destination user/IP right up front, interactively! -->
-
+-->
 
 
 ## Mounting work folders
@@ -87,26 +78,42 @@ Say you have a folder `/Users/mike/Git/some-project`. This is how to share it wi
 ```
 $ rustup update
 ```
-   
-```
-$ cargo install probe-rs-tools
-```
-
-### After kernel update
-
-You _must_ update `linux-modules-extra-$(uname -r)` _manually_ when kernel changes. See the instructions in [`rust+emb/linux/usbip-drivers.sh`](./rust+emb/linux/usbip-drivers.sh).
-
->Note: You may also need to restart the VM, i.e. (on the host):
->
->```
->$ multipass stop rust-emb; multipass shell rust-emb
->```
 
 ### `probe-rs-remote`
 
-`~/bin/probe-rs-remote` script currently needs manual care, if you wish to bring updates to it. See [`linux/probe-rs-remote.sh`](linux/probe-rs-remote.sh).
+`~/bin/probe-rs-remote.sh` script currently needs manual care, if you wish to bring updates to it.
 
 
+## What's not in the box
+
+Once you have `cargo` and suitable toolchains installed, adding more tools is easy. Here are some examples that particular projects might ask you to add:
+
+- `clang`
+
+	A compiler needed if projects contain C/C++ code. Install by:
+
+	```
+	$ sudo apt install llvm-dev libclang-dev clang
+	```
+
+- `bindgen` CLI
+
+	Generator for Rust/C interfaces. Install by:
+	
+	```
+	$ cargo install bindgen-cli
+	```
+
+## Next
+
+```
+$ multipass shell rust-emb
+```
+
+
+<!--
 ## References
 
 - [`probe-rs` docs](https://probe.rs/docs/)
+-->
+
