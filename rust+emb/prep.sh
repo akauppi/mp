@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Rust Embedded (Embassy) development.
 #
 # Usage:
-#   $ [XTENSA=1] [MP_NAME=xxx] [MP_PARAMS=...] [USE_NATIVE_MOUNT=1] [PROBE_RS_REMOTE={probe-rs@192.168.1.199}] rust+emb/prep.sh
+#   $ [XTENSA=1] [MP_NAME=xxx] [MP_PARAMS=...] [USE_ORIGINAL_MOUNT=1] [PROBE_RS_REMOTE={probe-rs@192.168.1.199}] rust+emb/prep.sh
 #
 # Requires:
 #   - multipass
@@ -18,13 +18,15 @@ XTENSA=${XTENSA:-0}
 MP_NAME=${MP_NAME:-rust-emb}
   # Note. '+' or '_' are NOT allowed in Multipass names (1.13; 1.14)
 
-MP_PARAMS=${MP_PARAMS:---memory 6G --disk 18G --cpus 3}
+MP_PARAMS=${MP_PARAMS:---memory 6G --disk 12G --cpus 3}
   #
   # Note: May be more than the base 'rust' VM would use; especially disk space.
 	#   Doing actual development (e.g. Embassy) has shown ~10GB to fall short.
 
 # Wasn't able to do interactive prompt on macOS (bash 3.2), but.. this should be fine.
 PROBE_RS_REMOTE=${PROBE_RS_REMOTE:-probe-rs@192.168.1.199}
+
+USE_ORIGINAL_MOUNT=${USE_ORIGINAL_MOUNT:-0}
 
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).
@@ -44,15 +46,13 @@ PROBE_RS_REMOTE=${PROBE_RS_REMOTE:-probe-rs@192.168.1.199}
 
 # Build the foundation
 #
-MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS SKIP_SUMMARY=1 \
+MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS SKIP_SUMMARY=1 USE_ORIGINAL_MOUNT=${USE_ORIGINAL_MOUNT} \
   ${MY_PATH}/../rust/prep.sh
 
 # Mount our 'linux' folder
 #
-if [ "${USE_NATIVE_MOUNT}" != "1" ]; then  # original!
-  multipass stop $MP_NAME
+if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
   multipass mount ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
-  multipass start $MP_NAME
 else
   multipass stop $MP_NAME
   multipass mount --type=native ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
@@ -92,13 +92,13 @@ fi
 #|  #1.2G	target/release
 #|  #1.2G	target
 
-# Multipass 1.14.0 absolutely NEEDS us to stop the instance first. Otherwise, following the 'umount' (in 'multipass info'):
-# <<
-#   info failed: cannot connect to the multipass socket
-# <<
-#multipass stop $MP_NAME
-multipass umount $MP_NAME
-sleep 4
+if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
+  multipass umount $MP_NAME
+else
+  multipass stop $MP_NAME
+  multipass umount $MP_NAME
+  sleep 6
+fi
 
 # LEAVE VM stopped; the user will likely map folders, next.
 cat <<EOF

@@ -19,7 +19,11 @@ chmod a+x ~/bin/probe-rs-remote.sh
 #
 # Ref -> https://unix.stackexchange.com/questions/69314/automated-ssh-keygen-without-passphrase-how
 #
-cat /dev/zero | ssh-keygen -t rsa -C "for 'probe-rs' remote" -q -N ""
+ssh-keygen < /dev/zero > /dev/null \
+  -t rsa -C "for 'probe-rs' remote" -q -N ""
+  # without '/dev/null' would output: <<
+  #   Enter file in which to save the key (/home/ubuntu/.ssh/id_rsa):
+  # <<
 
 # The manual step (once 'PROBE_RS_REMOTE' is really known):
 #ssh-copy-id $PROBE_RS_REMOTE

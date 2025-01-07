@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Rust development.
 #
 # Usage:
-#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] [USE_NATIVE_MOUNT=1] rust/prep.sh
+#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] [USE_ORIGINAL_MOUNT=1] rust/prep.sh
 #
 # Requires:
 #   - multipass
@@ -25,6 +25,8 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 10G --cpus 2}
 	# Hint: Use 'multipass info' on the host to observe actual usage.
 	#     RustRover also has a stats display in its remote development UI.
 
+USE_ORIGINAL_MOUNT=${USE_ORIGINAL_MOUNT:-0}
+
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).
 #
@@ -43,7 +45,7 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 10G --cpus 2}
 
 # Launch and prime
 #
-if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
+if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
   multipass launch lts --name $MP_NAME $MP_PARAMS --mount ${MY_PATH}/linux:/home/ubuntu/.mp
 else
   multipass launch lts --name $MP_NAME $MP_PARAMS
@@ -59,8 +61,13 @@ multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp/rustfmt.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp/shared-target.sh"
 
 # We don't need the VM-side scripts any more.
-multipass stop $MP_NAME
-multipass umount $MP_NAME
+if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
+  multipass umount $MP_NAME
+else
+  multipass stop $MP_NAME
+  multipass umount $MP_NAME
+  multipass start $MP_NAME
+fi
 
 # Restarting *may* be good because of service updates. Takes a little time, but it's just one time.
 # <<
@@ -79,9 +86,10 @@ multipass umount $MP_NAME
 #    ubuntu @ session #18: sshd[2816]
 #    ubuntu @ user manager service: systemd[1066]
 # <<
-
-#multipass stop $MP_NAME
-multipass start $MP_NAME
+if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then   # native mount did it already, above
+  multipass stop $MP_NAME
+  multipass start $MP_NAME
+fi
 
 if [ "${SKIP_SUMMARY}" != 1 ]; then
   echo ""
