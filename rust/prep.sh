@@ -58,16 +58,9 @@ multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp/rustfmt.sh"
 
 multipass exec $MP_NAME -- sh -c ". ~/.mp/shared-target.sh"
 
-if [ "${USE_NATIVE_MOUNT}" != 1 ]; then
-  # We don't need the VM-side scripts any more.
-  multipass stop $MP_NAME   # antidote for 1.14.0
-  multipass umount $MP_NAME
-
-else
-  # Since we are going to be restarting, 'stop' takes no additional time.
-  multipass stop $MP_NAME
-  multipass umount $MP_NAME
-fi
+# We don't need the VM-side scripts any more.
+multipass stop $MP_NAME
+multipass umount $MP_NAME
 
 # Restarting *may* be good because of service updates. Takes a little time, but it's just one time.
 # <<
@@ -87,19 +80,7 @@ fi
 #    ubuntu @ user manager service: systemd[1066]
 # <<
 
-# 'multipass restart' (on a living VM) is not cool for 1.14.0.
-#
-# 30-Aug-24: Using classic mounts:
-#   <<
-#     restart failed: cannot connect to the multipass socket
-#   <<
-#     ..and after that:
-#   <<
-#     $ mp info rust
-#     info failed: ssh connection failed: 'Connection refused'
-#   <<
-#
-multipass stop $MP_NAME
+#multipass stop $MP_NAME
 multipass start $MP_NAME
 
 if [ "${SKIP_SUMMARY}" != 1 ]; then

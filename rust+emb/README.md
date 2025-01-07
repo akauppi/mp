@@ -70,6 +70,72 @@ Say you have a folder `/Users/mike/Git/some-project`. This is how to share it wi
 [host]$ multipass shell rust-emb
 ```
 
+## Finishing `probe-rs` tunneling
+
+You can already use the VM to build embedded Rust code, but to flash them onto a hardware device, `probe-rs` tunnelling needs to be set up. 
+
+> [!NOTE]
+>We don't do this automatically, since that would mean you *must* have the assistant computer available by the time you run `prep.sh`. That might not be the case; or perhaps you just wish to have a build environment.
+
+Enter the VM:
+
+```
+$ multipass shell rust-emb
+```
+
+What is needed is:
+
+1. Confirm the `PROBE_RS_REMOTE` value
+
+	```
+	$ echo $PROBE_RS_REMOTE
+	probe-rs@192.168.1.199
+	```
+
+	Is this the `ssh` user and IP, to reach your Raspberry Pi? 
+
+	If so, carry on. 
+
+	If not, prepare it by editing `~/.bashrc` (and `. ~/.bashrc` to bring in the changes).
+
+2. Copy over the `ssh` public key
+
+	`prep.sh` has already created a key-pair we can use for the authentication (see it with `ls -al ~/.ssh`). 
+
+	```
+	$ ssh-copy-id $PROBE_RS_REMOTE
+	/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/ubuntu/.ssh/id_ed25519.pub"
+	The authenticity of host '192.168.1.199 (192.168.1.199)' can't be established.
+	ED25519 key fingerprint is SHA256:d+UMTm6/gW9NtWmBFG8mDXVgkTGmAaN6PVesgHxZQUg.
+	This key is not known by any other names.
+	Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+	/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+	/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+	probe-rs@192.168.1.199's password: 
+
+	Number of key(s) added: 1
+
+	Now try logging into the machine, with:   "ssh 'probe-rs@192.168.1.199'"
+and check to make sure that only the key(s) you wanted were added.
+	```
+
+	>You enter the `yes` and the password to the assistant computer.
+
+Now, you should be able to:
+
+```
+$ probe-rs list
+No debug probes were found.
+```
+
+Attach the devkit to the Raspberry Pi (use the port for JTAG).
+
+```
+$ probe-rs list
+The following debug probes were found:
+[0]: ESP JTAG -- 303a:1001:54:32:04:07:15:10 (EspJtag)
+```
+
 
 ## Maintenance
 
