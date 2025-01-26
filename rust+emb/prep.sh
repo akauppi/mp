@@ -64,7 +64,7 @@ fi
 
 # Create '~/bin' and add to PATH (for some/any scripts to use it)
 #
-multipass exec $MP_NAME -- sh -c 'install -d ~/bin && echo PATH="$PATH:$HOME/bin" >> ~/.bashrc'
+multipass exec $MP_NAME -- sh -c 'install -d ~/bin && echo PATH="\$PATH:$HOME/bin" >> ~/.bashrc'
 
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/rustup-targets.sh"
 
@@ -73,10 +73,6 @@ multipass exec $MP_NAME -- sh -c ". ~/.mp2/probe-rs-remote.sh"
 
 # tbd. if you need it, make optional  [UNPOLISHED]
 # multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/nightly.sh"
-
-if [ "${XTENSA}" == 1 ]; then
-  multipass exec $MP_NAME -- sh -c ". ~/.mp2/espup.sh"
-fi
 
 multipass exec $MP_NAME -- sh -c "echo '\nexport PROBE_RS_REMOTE=\"$PROBE_RS_REMOTE\"' >> ~/.bashrc"
 
