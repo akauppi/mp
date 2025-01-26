@@ -13,5 +13,5 @@ sudo DEBIAN_FRONTEND=noninteractive apt install -y pkg-config libudev-dev
 cargo install espflash
 
 # Write access needed for 'espflash' to flourish. ('/dev/ttyUSB0')
+# NOTE!  MP MUST BE RESTARTED for this change to take effect!!
 sudo usermod -a -G dialout ${USER}
-  # tbd. this MIGHT be needed for any flashing??

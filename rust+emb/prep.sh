@@ -18,7 +18,7 @@ XTENSA=${XTENSA:-0}
 MP_NAME=${MP_NAME:-rust-emb}
   # Note. '+' or '_' are NOT allowed in Multipass names (1.13; 1.14)
 
-MP_PARAMS=${MP_PARAMS:---memory 6G --disk 12G --cpus 3}
+MP_PARAMS=${MP_PARAMS:---memory 6G --disk 15G --cpus 3}
   #
   # Note: May be more than the base 'rust' VM would use; especially disk space.
 	#   Doing actual development (e.g. Embassy) has shown ~10GB to fall short.
@@ -26,6 +26,9 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 12G --cpus 3}
 # Wasn't able to do interactive prompt on macOS (bash 3.2), but.. this should be fine.
 PROBE_RS_REMOTE=${PROBE_RS_REMOTE:-probe-rs@192.168.1.199}
 
+# 'USE_ORIGINAL_MOUNT' is SO UNSTABLE (once the VM is up, e.g. 'multipass stop' might not work) that it's worth
+# considering banning it completely. // 8-Jan-25; Multipass 1.15.0
+#
 USE_ORIGINAL_MOUNT=${USE_ORIGINAL_MOUNT:-0}
 
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
@@ -63,14 +66,10 @@ fi
 #
 multipass exec $MP_NAME -- sh -c 'install -d ~/bin && echo PATH="$PATH:$HOME/bin" >> ~/.bashrc'
 
-multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/esp.sh"
+multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/rustup-targets.sh"
 
 # 'probe-rs' remote
 multipass exec $MP_NAME -- sh -c ". ~/.mp2/probe-rs-remote.sh"
-
-# 'probe-rs' over USB/IP
-#multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/probe-rs.sh"
-#multipass exec $MP_NAME -- sh -c ". ~/.mp2/usbip-drivers.sh"
 
 # tbd. if you need it, make optional  [UNPOLISHED]
 # multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp2/nightly.sh"
@@ -85,15 +84,9 @@ if [ -f ~/.mp2/custom.bashrc.sh ]; then
   multipass exec $MP_NAME -- sh -c "cat ~/.mp2/custom.bashrc.sh >> ~/.bashrc"
 fi
 
-# Disabled (7-Jan-25): only '4.0K' reported (since we don't build 'probe-rs', any more)
-#|# Clean the '/home/ubuntu/target' folder. It has ~1.2GB of build artefacts we don't need any more.
-#|#
-#|multipass exec $MP_NAME -- sh -c "du -h -d 1 target; rm -rf ~/target/release"
-#|  #1.2G	target/release
-#|  #1.2G	target
-
 if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
   multipass umount $MP_NAME
+  multipass stop $MP_NAME
 else
   multipass stop $MP_NAME
   multipass umount $MP_NAME
@@ -108,7 +101,7 @@ cat <<EOF
   You can change this by editing '~/.bashrc' within the VM.
 
 Next:
-- Map local folders with 'multipass mount --type=native {local path} $MP_NAME:/home/ubuntu/{remote path}'
+- Map local folders with 'multipass mount --type=native {local path} $MP_NAME:'
 - Launch the VM with 'multipass shell $MP_NAME'
 
 EOF

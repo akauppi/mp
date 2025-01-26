@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Rust tooling for targeting ESP-32 (no-std)
+# Rust tooling for targeting ESP32 (no-std)
 #
 # Reference:
 #   - Rust on ESP Book > RISC-V Targets Only

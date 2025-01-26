@@ -63,7 +63,7 @@ Say you have a folder `/Users/mike/Git/some-project`. This is how to share it wi
 ```
 
 ```
-[host]$ multipass mount --type=native /Users/mike/Git/some-project rust-emb:/home/ubuntu/some-project
+[host]$ multipass mount --type=native /Users/mike/Git/some-project rust-emb:
 ```
 
 ```
@@ -139,15 +139,39 @@ The following debug probes were found:
 
 ## Maintenance
 
-**Updating (within the sandbox)**
+### Updating (within the sandbox)
 
 ```
 $ rustup update
 ```
 
+### Freeing disk space
+
+The `~/target` folder is used for *all* Rust / Cargo compilation caching (steered by `~/.cargo/config.toml`). This folder may grow considerably large and is always safe to remove.
+
+```
+$ du -h -d 1 ~/target
+1.6G	/home/ubuntu/target/release
+247M	/home/ubuntu/target/thumbv7em-none-eabihf
+783M	/home/ubuntu/target/debug
+753M	/home/ubuntu/target/riscv32imac-unknown-none-elf
+3.4G	/home/ubuntu/target
+```
+
+```
+$ rm -rf ~/target
+```
+
+This helps you control the disk space use of the VM instance.
+
 ### `probe-rs-remote`
 
-`~/bin/probe-rs-remote.sh` script currently needs manual care, if you wish to bring updates to it.
+`~/bin/probe-rs-remote.sh` script currently needs manual care, if you wish to bring updates to it. Just copy-paste it from the source:
+
+```
+$ curl https://raw.githubusercontent.com/lure23/probe-rs-remote/refs/heads/main/sh/probe-rs-remote.sh \
+  -o ~/bin/probe-rs-remote.sh
+```
 
 
 ## What's not in the box
