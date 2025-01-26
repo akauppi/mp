@@ -80,8 +80,8 @@ fi
 
 multipass exec $MP_NAME -- sh -c "echo '\nexport PROBE_RS_REMOTE=\"$PROBE_RS_REMOTE\"' >> ~/.bashrc"
 
-if [ -f ~/.mp2/custom.bashrc.sh ]; then
-  multipass exec $MP_NAME -- sh -c "cat ~/.mp2/custom.bashrc.sh >> ~/.bashrc"
+if [ -f ./linux/custom.sh ]; then
+  multipass exec $MP_NAME -- sh -c ". ~/.mp2/custom.sh"
 fi
 
 if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
@@ -91,6 +91,18 @@ else
   multipass stop $MP_NAME
   multipass umount $MP_NAME
   sleep 6
+fi
+
+# Custom mounts, as
+# <<
+#   # can have comments
+#   ~/some/path
+#   ...
+# <<
+if [ -f ./custom.mounts.list ]; then
+  multipass stop $MP_NAME
+  cat custom.mounts.list | grep -v "^#" | sed "s!^~!$HOME!" | \
+    xargs -I X multipass mount --type=native X $MP_NAME:
 fi
 
 # LEAVE VM stopped; the user will likely map folders, next.
