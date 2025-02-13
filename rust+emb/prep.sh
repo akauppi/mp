@@ -95,9 +95,9 @@ fi
 #   ~/some/path
 #   ...
 # <<
-if [ -f ./custom.mounts.list ]; then
+if [ -f $MY_PATH/custom.mounts.list ]; then
   multipass stop $MP_NAME
-  cat custom.mounts.list | grep -v "^#" | sed "s!^~!$HOME!" | \
+  cat $MY_PATH/custom.mounts.list | grep -v "^#" | sed "s!^~!$HOME!" | \
     xargs -I X multipass mount --type=native X $MP_NAME:
 fi
 
@@ -105,7 +105,7 @@ fi
 cat <<EOF
 
 🍇 Your VM is ready.
-- 'probe-rs' is directed to reach '$PROBE_RS_REMOTE' over ssh.
+- 'probe-rs' and 'espflash' are directed to reach '$PROBE_RS_REMOTE' over ssh.
   You can change this by editing '~/.bashrc' within the VM.
 
 Next:

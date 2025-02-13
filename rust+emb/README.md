@@ -3,11 +3,7 @@
 Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 
 - Rust compilation targets (ESP32-C3, ESP32-C6)
-- [probe-rs-remote](https://github.com/lure23/probe-rs-remote) connection to a computer with [`probe-rs`](https://probe.rs) installed
-
-<!-- tbd.
-- `nightly` toolchain, as long as it's needed/favoured by Embassy
--->
+- [probe-rs-remote](https://github.com/lure23/probe-rs-remote): connection to an external computer with `probe-rs` and `espflash` installed
 
 
 ## Overall
@@ -15,22 +11,19 @@ Intended for [Embassy](https://embassy.dev) development, this VM sets up:
 ![](.images/probe-rs-setup.png)
 
 
-You'll be connecting the development kit (e.g. [ESP32-C6-DevKitC](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c6/esp32-c6-devkitc-1/user_guide.html#esp32-c6-devkitc-1-v1-2)) to *another* computer; either a Raspberry Pi or a Linux PC, which needs to have `probe-rs` installed.
+You'll be connecting the development kit (e.g. [ESP32-C6-DevKitC](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c6/esp32-c6-devkitc-1/user_guide.html#esp32-c6-devkitc-1-v1-2)) to *another* computer; either a Raspberry Pi or a Linux PC, which needs to have `probe-rs` and `espflash` installed.
 
-This gives the benefit that your development board is *airgapped* from the development system, where you run your IDE etc. If something were to go wrong with electronics (read: SMOKE!), you'll appreciate this!
+This gives the benefit that your development board is **galvanically isolated** from the development system, where you run your IDE etc. If something were to go wrong with electronics (read: SMOKE!), you'll appreciate this!
 
-><small>As a side note, with Multipass we'd need some way of passing USB over IP anyhow, since Multipass does not support USB device mapping.</small>
+> [!NOTE]
+>With Multipass we'd need some way of passing USB over IP anyhow, since Multipass does not support USB device mapping.
 
 
 ## Preparations
 
 If you already have the assisting computer (Raspberry Pi) set up, great! Feed its `ssh` user and IP to the creating script, below.
 
-If you don't, you can either:
-
-- visit [`probe-rs-remote`](https://github.com/lure23/probe-rs-remote) 
-- ..or let the default (`probe-rs@192.168.1.199`) be used for now and edit it later in VM's `~/.bashrc`.
-
+If you don't, visit [`probe-rs-remote`](https://github.com/lure23/probe-rs-remote) to see how to set things up.
 
 ## Usage
 
@@ -54,7 +47,7 @@ To enable Xtensa targets, add `XTENSA=1` before the command. Be aware that this 
 
 The idea is that your software would remain on the host disk, shared with the Multipass VM (where the development tools sans IDE reside).
 
-Say you have a folder `/Users/mike/Git/some-project`. This is how to share it with the VM, as `~/some-project`.
+Say you have a folder `/Some/path/to/circus`. This is how to share it with the VM, as `~/circus`.
 
 >Note: We use "native" folder sharing, which is said to be faster than the default. It does, however, need the VM to be stopped when mounts are added/removed.
 
@@ -63,7 +56,7 @@ Say you have a folder `/Users/mike/Git/some-project`. This is how to share it wi
 ```
 
 ```
-[host]$ multipass mount --type=native /Users/mike/Git/some-project rust-emb:
+[host]$ multipass mount --type=native /Some/path/to/circus rust-emb:
 ```
 
 ```
@@ -116,7 +109,7 @@ What is needed is:
 	Number of key(s) added: 1
 
 	Now try logging into the machine, with:   "ssh 'probe-rs@192.168.1.199'"
-and check to make sure that only the key(s) you wanted were added.
+	and check to make sure that only the key(s) you wanted were added.
 	```
 
 	>You enter the `yes` and the password to the assistant computer.
@@ -128,7 +121,7 @@ $ probe-rs list
 No debug probes were found.
 ```
 
-Attach the devkit to the Raspberry Pi (use the port for JTAG).
+Attach the devkit to the Raspberry Pi (use the USB/JTAG port or if you only have USB/UART, run `espflash board-info`).
 
 ```
 $ probe-rs list
@@ -147,7 +140,7 @@ $ rustup update
 
 ### Freeing disk space
 
-The `~/target` folder is used for *all* Rust / Cargo compilation caching (steered by `~/.cargo/config.toml`). This folder may grow considerably large and is always safe to remove.
+The `~/target` folder is used for *all* Cargo compilation caching (steered by `~/.cargo/config.toml`). This folder may grow considerably large and is always safe to remove.
 
 ```
 $ du -h -d 1 ~/target
@@ -166,11 +159,14 @@ This helps you control the disk space use of the VM instance.
 
 ### `probe-rs-remote`
 
-`~/bin/probe-rs-remote.sh` script currently needs manual care, if you wish to bring updates to it. Just copy-paste it from the source:
+`~/bin/probe-rs-remote.sh` and `~/bin/espflash-remote.sh` scripts currently need manual care, if you wish to bring updates to them. Just copy-paste from the source:
 
 ```
 $ curl https://raw.githubusercontent.com/lure23/probe-rs-remote/refs/heads/main/sh/probe-rs-remote.sh \
   -o ~/bin/probe-rs-remote.sh
+
+$ curl https://raw.githubusercontent.com/lure23/probe-rs-remote/refs/heads/main/sh/espflash-remote.sh \
+  -o ~/bin/espflash-remote.sh
 ```
 
 
@@ -183,7 +179,7 @@ Once you have `cargo` and suitable toolchains installed, adding more tools is ea
 	A compiler needed if projects contain C/C++ code. Install by:
 
 	```
-	$ sudo apt install llvm-dev libclang-dev clang
+	$ sudo apt install libclang-dev clang
 	```
 
 - `bindgen` CLI

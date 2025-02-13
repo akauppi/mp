@@ -58,6 +58,8 @@ multipass exec $MP_NAME -- sudo sh -c "apt update && DEBIAN_FRONTEND=noninteract
 multipass exec $MP_NAME -- sh -c ". ~/.mp/rustup.sh"
 multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp/rustfmt.sh"
 
+# Use common '~/target' for artefacts of all projects. Saves disk space and _more importantly_ guarantees the
+# artefacts faster access than if they were mounted!!
 multipass exec $MP_NAME -- sh -c ". ~/.mp/shared-target.sh"
 
 # We don't need the VM-side scripts any more.
@@ -69,24 +71,19 @@ else
   multipass start $MP_NAME
 fi
 
-# Restarting *may* be good because of service updates. Takes a little time, but it's just one time.
-# <<
-#   Service restarts being deferred:
-#    /etc/needrestart/restart.d/dbus.service
-#    systemctl restart getty@tty1.service
-#    systemctl restart serial-getty@ttyS0.service
-#    systemctl restart systemd-logind.service
-#    systemctl restart unattended-upgrades.service
-#
-#   No containers need to be restarted.
-# <<
-# <<
-#   User sessions running outdated binaries:
-#    ubuntu @ session #17: sshd[2214]
-#    ubuntu @ session #18: sshd[2816]
-#    ubuntu @ user manager service: systemd[1066]
-# <<
-if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then   # native mount did it already, above
+# native mount did it already, above
+if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
+  # Restarting *may* be good because of service updates.
+  # <<
+  #   Service restarts being deferred:
+  #    /etc/needrestart/restart.d/dbus.service
+  #    systemctl restart getty@tty1.service
+  #    systemctl restart serial-getty@ttyS0.service
+  #    systemctl restart systemd-logind.service
+  #    systemctl restart unattended-upgrades.service
+  #
+  #   No containers need to be restarted.
+  # <<
   multipass stop $MP_NAME
   multipass start $MP_NAME
 fi
