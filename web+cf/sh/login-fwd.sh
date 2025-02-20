@@ -7,7 +7,7 @@ set -e
 # This script is for MANUAL USE in setting up 'wrangler' CLI; not referred to from other scripts!!!
 #
 # Usage:
-#   $ [MP_NAME=xxx] web+cf/login-fwd.sh
+#   $ [MP_NAME=xxx] web+cf/sh/login-fwd.sh
 #
 MY_PATH=$(dirname $0)
 _PORT=8976

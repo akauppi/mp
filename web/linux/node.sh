@@ -18,7 +18,11 @@ set -e
 (which curl >/dev/null) || \
   (sudo -- sh -c "apt-get install -y curl")
 
-# Last stable (even) version
+# Last stable (even) version.
+#
+# tbd. from Apr'25 onwards, change to 24:
+#   -> https://nodejs.org/en/about/previous-releases
+#
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 
 sudo -- sh -c "apt-get install -y nodejs"

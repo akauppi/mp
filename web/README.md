@@ -31,6 +31,8 @@ You can now open the port in host browser.
 
 ## Using: installing a CLI
 
+>Note: For Cloudflare, it's better to use App tokens. See [`../web+cf/`](../web+cf/README.md).
+
 Cloud CLIs often use a browser dance.
 
 1. Establish port forwarding from host `localhost:8976` to VM's `:8976`.

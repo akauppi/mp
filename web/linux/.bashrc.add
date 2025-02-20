@@ -1,7 +1,0 @@
-# Environment
-export CHOKIDAR_USEPOLLING=1
-
-# Aliases (personal preference; may vary..)
-alias ni='npm install'
-alias no='npm outdated'
-alias gs='git status'

@@ -69,7 +69,7 @@ You may try both and decide for yourself.
 >Run this:
 >
 >```
->$ web+cf/login-fwd.sh
+>$ web+cf/sh/login-fwd.sh
 >...
 >```
 >
@@ -85,11 +85,11 @@ You may try both and decide for yourself.
 
 #### B. Login with custom API tokens
 
-Using API tokens allows you *minute* control to what the CLI can and can not do. The author prefers this in the long run, since it's always good to run with the minimum set of access rights - especially if you deal with production systems.
+This is the recommended choice, by Cloudflare. Using API tokens allows you *minute* control to what the CLI can and can not do. It's always good to run with the minimum set of access rights - especially if you deal with production systems.
 
 Also, some Cloudflare services (e.g. PubSub, as of May'24) [will request you](https://developers.cloudflare.com/pub-sub/guide/#3-fetch-your-credentials) to create a custom access token.
 
-One more plus - no special hoops are needed! :) Just a browser, copy-paste. Done it!
+One more plus - no special hoops are needed! :) Just a browser, copy-paste. Done!
 
 **Creating an API token**
 
@@ -134,7 +134,7 @@ Complete the creation and you'll get a token like `Blah0[...]fuchS`.
 >├───────────────────┼───────────────┤
 >│ Outstanding Earth │ ...snip...    │
 >└───────────────────┴───────────────┘
-🔓 To see token permissions visit https://dash.cloudflare.com/profile/api-tokens
+>🔓 To see token permissions visit https://dash.cloudflare.com/profile/api-tokens
 >```
 
 It works.
