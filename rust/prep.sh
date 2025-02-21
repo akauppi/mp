@@ -96,7 +96,7 @@ fi
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c ". .cargo/env && cargo --version && rustc --version"
-  # cargo 1.80.1 (376290515 2024-07-16)
-  # rustc 1.80.1 (3f5fd8dd4 2024-08-06)
+  # cargo 1.85.0 (d73d2caf9 2024-12-31)
+  # rustc 1.85.0 (4d91de4e4 2025-02-17)
 
 echo ""
