@@ -7,9 +7,26 @@ Has:
 - `node`
 - `npm`
 
-## Using: exposing the port
 
-To have the VM expose its port to outside world (not only `localhost`):
+## Steps
+
+```
+$ web/prep.sh
+```
+
+You'll get `node` and `npm`. 
+
+The `CHOKIDAR_USEPOLL` env.var. is defined, allowing hot-module-reloading to work (over a network mount) for frameworks using chokidar (e.g. Vite).
+
+
+## Troubles
+
+If you're using a Mac, working with the project will be *tremendously slow*. See [`DEVS/`](./DEVS/The%20'node_modules'%20dilemma.md) for a discussion - and work-arounds.
+
+
+## Using: exposing the port to host
+
+To have the VM expose its port to outside world (not only its internal `localhost`):
 
 1. Add something like this:
 
@@ -29,6 +46,11 @@ You can now open the port in host browser.
 
 <small>`|*|`: It stays the same for each launch, but varies over separate launches.</small>
 
+### Alternatively
+
+A parallel approach is forwarding the VM's `localhost` to the host. Unfortunately, Multipass doesn't have built-in port forwarding and this requires you to keep a terminal open. See [`../tools/port-fwd.sh`](../tools/port-fwd.sh) for ideas...
+
+
 ## Using: installing a CLI
 
 >Note: For Cloudflare, it's better to use App tokens. See [`../web+cf/`](../web+cf/README.md).
@@ -43,7 +65,7 @@ Cloud CLIs often use a browser dance.
 
    Keep the resulting `ssh` session open; port forwarding is valid as long as it is. <sup>`|**|`</sup>
 
-   The IP is naturally the IP of your local VM.
+   The IP is the IP of your local VM.
    
 	The port number differs based on your product. Cloudflare `wrangler` uses 8976. You can *usually* see the port number mentioned in the URL that the login dance (see next step) exposes for you. :)
 
