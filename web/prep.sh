@@ -79,7 +79,7 @@ fi
 #
 append_bashrc() {
   # for Vite hot-module-loading to work, over network mounts (which Multipass mounts are).
-  LINE="CHOKIDAR_USEPOLLING=1"
+  LINE="export CHOKIDAR_USEPOLLING=1"
   multipass exec $MP_NAME -- sh -c "echo '$LINE' >> ~/.bashrc"
 
   if [ -f $CUSTOM_BASHRC ]; then

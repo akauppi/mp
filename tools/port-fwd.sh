@@ -2,9 +2,9 @@
 
 set -e
 
-# Forward a port of Multipass 'web-cf' VM to 'localhost'
+# Forward a port of Multipass VM to 'localhost'
 #
-# This is ONLY A MATTER OF CONVENIENCE. You can always point the browser to the full {IP}:{PORT}.
+# This is ONLY A MATTER OF CONVENIENCE. You can always point the browser to the full '{IP}:{PORT}' URL.
 #
 # Usage:
 #   $ PORT=... [MP_NAME=...] [MSG="...\n..."] ./port-fwd.sh

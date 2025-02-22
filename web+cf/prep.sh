@@ -20,7 +20,7 @@ CUSTOM_MOUNTS=$MY_PATH/custom.mounts.list
 MP_NAME=${MP_NAME:-web-cf}
   # Note. 'web+cf' or 'web_cf' not allowed names by Multipass (1.13.1)
 
-MP_PARAMS=${MP_PARAMS:---memory 4G --disk 8G --cpus 2}
+MP_PARAMS=${MP_PARAMS:---memory 4G --disk 8G --cpus 3}
   #
   # $ mp info web-cf
   #   <<
