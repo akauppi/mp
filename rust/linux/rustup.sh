@@ -46,3 +46,11 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- \
 
 # Primes 'rustup' so that e.g. 'cargo' can be run, and/or 'rustfmt' installed.
 . ~/.cargo/env && rustup default stable
+
+# Set up command line completions
+# From -> https://stackoverflow.com/a/72983694/14455
+#
+mkdir -p ~/.local/share/bash-completion/completions
+
+rustup completions bash       > ~/.local/share/bash-completion/completions/rustup
+rustup completions bash cargo > ~/.local/share/bash-completion/completions/cargo
