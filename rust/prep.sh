@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Rust development.
 #
 # Usage:
-#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] [USE_ORIGINAL_MOUNT=1] rust/prep.sh
+#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] [USE_ORIGINAL_MOUNT=1] [CUSTOM_MOUNTS=0] rust/prep.sh
 #
 # Requires:
 #   - multipass
@@ -26,6 +26,9 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 10G --cpus 2}
 	#     RustRover also has a stats display in its remote development UI.
 
 USE_ORIGINAL_MOUNT=${USE_ORIGINAL_MOUNT:-0}
+
+# DISABLED
+#|CUSTOM_MOUNTS=${CUSTOM_MOUNTS:-$MY_PATH/custom.mounts.list}   # 0|{path}
 
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).
@@ -62,32 +65,31 @@ multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp/rustfmt.sh"
 # artefacts faster access than if they were mounted!!
 multipass exec $MP_NAME -- sh -c ". ~/.mp/shared-target.sh"
 
-# We don't need the VM-side scripts any more.
+# We don't need the VM-side scripts any more; leave stopped.
 if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
   multipass umount $MP_NAME
+  multipass stop $MP_NAME
 else
   multipass stop $MP_NAME
   multipass umount $MP_NAME
-  multipass start $MP_NAME
 fi
 
-# native mount did it already, above
-if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
-  # Restarting *may* be good because of service updates.
-  # <<
-  #   Service restarts being deferred:
-  #    /etc/needrestart/restart.d/dbus.service
-  #    systemctl restart getty@tty1.service
-  #    systemctl restart serial-getty@ttyS0.service
-  #    systemctl restart systemd-logind.service
-  #    systemctl restart unattended-upgrades.service
-  #
-  #   No containers need to be restarted.
-  # <<
-  multipass stop $MP_NAME
-  multipass start $MP_NAME
-fi
+# DISABLED; use 'rust+{desktop|emb}'
+#|# Custom mounts, as
+#|# <<
+#|#   # can have comments
+#|#   ~/some/path
+#|#   ...
+#|# <<
+#|if [[ "$CUSTOM_MOUNTS" != "0" ]] && [[ -f $CUSTOM_MOUNTS ]]; then
+#|  multipass stop $MP_NAME
+#|  cat $CUSTOM_MOUNTS | grep -v "^#" | sed "s!^~!$HOME!" | \
+#|    xargs -I X multipass mount --type=native X $MP_NAME:
+#|fi
 
+multipass start $MP_NAME
+
+# Needs VM to be running
 if [ "${SKIP_SUMMARY}" != 1 ]; then
   echo ""
   echo "Multipass IP ($MP_NAME): $(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )"
