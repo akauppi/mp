@@ -24,8 +24,7 @@ set -e
 #       'mount --bind'.
 #
 # Downsides:
-#   - this script needs to be manually run (once) for each npm/SvelteKit project
-#   -
+#   - this script needs to be manually run for each npm/SvelteKit project, after each restart
 #
 # Positive side effects:
 #   - the host (an IDE?) and the VM now have fully separate 'npm' caches, which is beneficial if there are
@@ -94,4 +93,3 @@ sudo mount -t tmpfs -o size=5m,uid=1000 $SVELTE_KIT_TAG .svelte-kit
 echo ""
 mount | grep -E "$_CWD" | grep -v "$_CWD "
   # remove mapping of actual cwd
-  
