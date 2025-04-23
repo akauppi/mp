@@ -8,7 +8,7 @@ set -e
 #     perform similar actions manually - the way You like! :)
 #
 # Usage:
-#   $ PORT=x [MP_NAME=...] [MSG="...\n..."] {path-to}/port-fwd.sh
+#   $ PORT=x [MP_NAME=...] [MSG="...\n..."] {path-to}/port-fwd.sh -d
 #
 # References:
 #   - "Specify private key in SSH as string" (SO) [1]
@@ -24,6 +24,11 @@ unbold=$(printf '\033[21m')
 
 #ul=$(printf '\033[4m')
 #unul=$(printf '\033[24m')
+
+_DAEMON=''
+if [[ "$1" == "-d" ]]; then
+  _DAEMON=1
+fi
 
 usage() {
   echo >&2 "Usage:
@@ -63,11 +68,11 @@ chmod 600 $_LOCAL_KEY
 # Pick the IP
 _MP_IP=$(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )
 
-cat <<EOL1
-*
-* Going to forward the port '${_MP_IP}:${PORT}' as 'localhost:${PORT}'.
-*
-EOL1
+#cat <<EOL1
+#*
+#* Going to forward the port '${_MP_IP}:${PORT}' as 'localhost:${PORT}'.
+#*
+#EOL1
 
 ssh -ntt -i ${_LOCAL_KEY} -o StrictHostKeyChecking=accept-new -L ${PORT}:localhost:${PORT} ubuntu@${_MP_IP} > /dev/null &
 _PS_TO_KILL=$!
@@ -76,14 +81,22 @@ _PS_TO_KILL=$!
 cleanup() {
   kill ${_PS_TO_KILL}
 }
-trap cleanup EXIT
 
-# '../web+cf/sh/login-fwd.sh' benefits from being able to inject a custom message.
-#
-MSG=${MSG:-"\nSharing port ${PORT}. KEEP THIS TERMINAL RUNNING.\n"}
-echo -e "${MSG}"
-  # ^-- Quotes matter for proper output of ('web+cf/.../login-fwd.sh's) message. Do not remove.
+if [[ ! $_DAEMON ]]; then
+  trap cleanup EXIT
 
-read -rsp $'Press a key to stop the sharing.\n' -n1 KEY
+  # '../web+cf/sh/login-fwd.sh' benefits from being able to inject a custom message.
+  #
+  MSG=${MSG:-"\nSeeing port ${PORT}. KEEP THIS TERMINAL RUNNING.\n"}
+  echo -e "${MSG}"
+    # ^-- Quotes matter for proper output of ('web+cf/.../login-fwd.sh's) message. Do not remove.
+
+  read -rsp $'Press a key to stop the sharing.\n' -n1 KEY
+else
+  echo "Seeing port ${PORT}.
+
+To stop sharing, do ${bold}kill ${_PS_TO_KILL}${unbold}.
+"
+fi
 
 # done
