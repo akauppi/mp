@@ -8,7 +8,7 @@ set -e
 #     perform similar actions manually - the way You like! :)
 #
 # Usage:
-#   $ PORT=x [MP_NAME=...] [MSG="...\n..."] {path-to}/port-fwd.sh -d
+#   $ PORT=x [MP_NAME=...] [MSG="...\n..."] {path-to}/port-fwd.sh [-d]
 #
 # References:
 #   - "Specify private key in SSH as string" (SO) [1]
@@ -32,7 +32,7 @@ fi
 
 usage() {
   echo >&2 "Usage:
-  $ PORT=... [MP_NAME=...] $0
+  $ PORT=... [MP_NAME=...] $0 [-d]
 "
 }
 
