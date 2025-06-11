@@ -23,7 +23,7 @@ set -e
 # tbd. from Apr'25 onwards, change to 24:
 #   -> https://nodejs.org/en/about/previous-releases
 #
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_23.x | sudo -E bash -
 
 sudo -- sh -c "apt-get install -y nodejs"
 
