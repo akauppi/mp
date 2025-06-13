@@ -20,10 +20,10 @@ set -e
 
 # Last stable (even) version.
 #
-# tbd. from Apr'25 onwards, change to 24:
+# To check release schedule:
 #   -> https://nodejs.org/en/about/previous-releases
 #
-curl -fsSL https://deb.nodesource.com/setup_23.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 
 sudo -- sh -c "apt-get install -y nodejs"
 
