@@ -12,10 +12,11 @@ set -e
 #
 MY_PATH=$(dirname $0)
 
-# Create such a file to place your time-and-again (e.g. aliases) commands (e.g. aliases):
+# Create such a file to place your time-and-again commands (e.g. aliases):
 # <<
 #   alias ni='npm install'
 #   alias no='npm outdated'
+#   alias nus='npm update --save'
 #   alias gs='git status'
 # <<
 # #undocumented
@@ -23,7 +24,7 @@ CUSTOM_BASHRC=$MY_PATH/custom.bashrc
 
 # Provide defaults
 #
-MP_NAME=${MP_NAME:-web}
+MP_NAME=${MP_NAME:-npm}
 MP_PARAMS=${MP_PARAMS:---memory 4G --disk 5G --cpus 2}
   #
   # $ mp info web
@@ -47,12 +48,12 @@ MP_PARAMS=${MP_PARAMS:---memory 4G --disk 5G --cpus 2}
 
 # Launch and prime
 #
-if [ "$USE_NATIVE_MOUNT" != "1" ]; then
-  multipass launch lts --name $MP_NAME $MP_PARAMS --mount ${MY_PATH}/linux:/home/ubuntu/.mp
-else
+if [ "$USE_NATIVE_MOUNT" == "1" ]; then
   multipass launch lts --name $MP_NAME $MP_PARAMS
   multipass stop $MP_NAME
   multipass mount --type=native ${MY_PATH}/linux ${MP_NAME}:/home/ubuntu/.mp
+else
+  multipass launch lts --name $MP_NAME $MP_PARAMS --mount ${MY_PATH}/linux:/home/ubuntu/.mp
 fi
 
 multipass exec $MP_NAME -- sudo sh -c "apt update && DEBIAN_FRONTEND=noninteractive apt -y upgrade"
@@ -61,21 +62,21 @@ multipass exec $MP_NAME -- sh -c "~/.mp/node.sh"
 multipass exec $MP_NAME -- sh -c "~/.mp/gitignore.sh"
 
 # We don't need the VM-side scripts any more.
-if [ "$USE_NATIVE_MOUNT" != "1" ]; then
+if [ "$USE_NATIVE_MOUNT" == "1" ]; then
+  multipass stop $MP_NAME
+  multipass umount $MP_NAME
+  multipass start $MP_NAME
+else
   multipass umount $MP_NAME
 
   # Restart also for soft mounts, just-in-case
   multipass stop $MP_NAME
   multipass start $MP_NAME
-else
-  multipass stop $MP_NAME
-  multipass umount $MP_NAME
-  multipass start $MP_NAME
 fi
 
 # Append to '~/.bashrc'.
 #
-# All these are for the developer experience; any changes involving tools themselves would have been made above.
+# These are for the developer experience; any changes involving tools themselves would have been made above.
 #
 append_bashrc() {
   # for Vite hot-module-loading to work, over network mounts (which Multipass mounts are).
@@ -91,8 +92,18 @@ append_bashrc() {
 }
 append_bashrc
 
-#DEBUG
-#multipass exec $MP_NAME -- sh -c "tail ~/.bashrc"
+# Custom mounts, as
+# <<
+#   # can have comments
+#   ~/some/path
+#   ...
+# <<
+if [ -f $CUSTOM_MOUNTS ]; then
+  multipass stop $MP_NAME
+  cat $CUSTOM_MOUNTS | grep -v "^#" | sed "s!^~!$HOME!" | \
+    xargs -I X multipass mount --type=native X $MP_NAME:
+  multipass start $MP_NAME
+fi
 
 if [ "$SKIP_SUMMARY" != "1" ]; then
   echo ""
@@ -102,7 +113,7 @@ fi
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c "node --version && npm --version"
-  #v22.14.0
-  #10.9.2
+  #v24.1.0
+  #11.3.0
 
 echo ""
