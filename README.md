@@ -2,13 +2,25 @@
 
 Scripts for setting up [Multipass](https://multipass.run) virtual machines, in the way of WSL, but on macOS.
 
+<!--
+> [!NOTE]
+> [!TIP]
+> [!IMPORTANT]
+> [!WARNING]
+> [!CAUTION]
+-->
+
+> [!NOTE]
+>
+>Also check out [Lima](https://lima-vm.io) - Linux Machines. This repo is not using that but the script should be easy to apply. Lima supports port forwards (yay!) and may be more stable to use than Multipass. The author hasn't tried it, yet. (Jun'25)
+
 ## Background
 
-**Why?**
+**Why to sandbox?**
 
 World is a risky place. Sandboxing allows you to separate *business account* (emails etc.) from *developer account* (that pulls in stuff from third party sources on the Internet), without disturbing the workflow, too much.
 
-One can use containers for development, but Docker Desktop feels too big a tool for daily use, for this author.
+One can use containers for development, but Docker Desktop feels too big, for this author. And they've become greedy.
 
 **Discipline**
 
@@ -16,50 +28,42 @@ Sandboxing of course needs discipline. The `mp` approach is done so that:
 
 1. Tooling is separate from development repos
 
-   This is important so that your repos are not cluttered by toolchain choices. A repo would work "just fine" with native tooling (on Ubuntu Linux), if someone so wishes.
+   This is important so that your repos are not cluttered by toolchain choices. It also allows the repo to work "just fine" with native tooling (on Ubuntu Linux), if someone so wishes. This is especially important for open source projects: we *do not impose using `mp`* on others!!! 
 
-2. We want to support remote IDE's (later..)
+2. Composability
 
-   This requires a beefier machine (more cores; more memory). You might opt for partially VM-based workflows, but it's still better than not starting the sandbox transition.
+   The internal structure allows to take any Ubuntu VM, and curry certain tools on top of it. E.g. `npm`; then `wrangler` if you need such. Or Rust, and curry embedded tooling on top. Things aren't rigid, and aren't repeated.
 
 **Alternatives**
 
-Fully cloud-based sandbox-as-a-service comes to mind. 
+1. Local VM's
 
-- [Jetbrains Space](https://www.jetbrains.com/space/)
-- ..other vendors have similar
+	- [Linux machines](https://lima-vm.io)
 
-This can be ideal for you, but this author prefers to have the *option* of locally hosted, offline-capable development.
+2. Fully cloud-based sandbox-as-a-service
 
-It's possible, by -say- 2026, that such remote development platforms become the norm. They certainly have many things going for them, in the same way as multiplayer games have.
+	- [Jetbrains Space](https://www.jetbrains.com/space/)
+	- ..other vendors have similar
+	
+	This can be ideal for you, but this author prefers to have the *option* of locally hosted, offline-capable development.
 
-
-## Sandboxes available
-
-- [`rust`](rust/README.md); stable
-- [`rust+emb`](rust+emb/README.md); stable
-
-	Rust aimed at embedded (ESP32) development.
-
-- [`web`](web/README.md); stable
-- [`web+cf`](web+cf/README.md)
-
-	Cloudflare CLI (`wrangler`) on top of generic web tools.
 
 ## Requirements
 
-- Multipass 1.14.0 installed
+- Latest Multipass installed
 
-The system is intended to work on all macOS, Linux and Windows hosts, but is only tested on macOS. If you find issues, please create an Issue!
+The system is intended to work on all macOS, Linux and Windows hosts, but is only tested on macOS. If you find issues, please create an issue!
 
->Note: For Windows, Pro versions are recommended since only they provide Hyper-V (native) virtualization.
+>Note: For Windows, Pro versions of the OS are recommended since only they provide Hyper-V (native) virtualization.
 
 <!-- Developed with:
-- macOS 15.2
-- Multipass 1.15.0
+- macOS 15.5
+- Multipass 1.15.1
 -->
 
 ## Usage
+
+*tbd. This is intended to change, due to the composable approach*
 
 ```
 $ rust/prep.sh
@@ -81,7 +85,7 @@ To add a project folder to be shared between the host (macOS) and the Linux side
 
 ```
 $ multipass stop rust-emb
-$ multipass mount --type native $(pwd) rust-emb:/home/ubuntu/SOME
+$ multipass mount --type native {path-to-folder} rust-emb:
 $ multipass start rust-emb
 ```
 
@@ -93,19 +97,26 @@ $ multipass shell rust-emb
 
 You are now in an Ubuntu sandbox.
 
+> [!WARN]
+> 
+> Multipass (on Mac) has had stability difficulties with mounts, since 1.13. This is why the scripts - and the instructions above - stop a VM before changing its things.
+
+
 ## Hints
 
 ### Separate color for the VM terminal
 
 Change your Multipass terminal's look by `(right click)` > `Show Inspector`. Different coloring helps tremendously!
 
-### Accessing USB devices
+![](.images/inspect.png)
 
-Multipass does not provide USB pass-through. However, you can reach USB devices using e.g. [`usbipd-win`](https://github.com/dorssel/usbipd-win).
+*Figure 1. Ocean is the author's favourite*  <!-- brief editor, from the 1990's -->
 
-*tbd. If needed, a separate `docs/` file about this.*
+### Accessing USB devices `#embedded`
 
+Multipass does not provide USB pass-through. There are ways around this, however. Look for USB/IP (Windows and Linux can be used as a server); also, some development tools have native remote protocols ([`probe-rs`](https://probe.rs)).
 
+<!-- #hidden
 ## 📛WARNING ON MULTIPASS 1.14.x!!
 
 >Have not checked whether this applies to 1.15.0 as well. Safe to assume it does.
@@ -128,10 +139,13 @@ It has issues with mounts, and/or active instances in general. Until those are r
 	- ...continue
 
 A bit harsh, but.. since you can easily recreate the VM's from nothing (with `mp`), shouldn't be worth risking the stability. 
+-->
 
 ## Troubleshooting
 
-IF you get such an error:
+---
+
+If you get:
 
 ```
 $ mp stop --force rust-emb
@@ -158,7 +172,7 @@ If you get:
 start failed: cannot connect to the multipass socket
 ```
 
-Same thing. Don't try to be brave. Just restart the computer!
+Don't try to be brave. Just restart the computer!!!
 
 ---
 
@@ -168,4 +182,4 @@ If you get:
 launch failed: Remote "" is unknown or unreachable.
 ```
 
-Same thing. Just restarting the daemon was enough.
+Just restarting the daemon was enough.

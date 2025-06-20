@@ -1,6 +1,6 @@
 # Track
 
-## Mount problems with >= 1.14 series
+## Mount problems with >= 1.14 series `#multipass`
 
 >*Continues with Multipass 1.15*
 
@@ -11,7 +11,7 @@
 >Note: [Replace on MacOS QEMU by Apple VZ](https://github.com/canonical/multipass/issues/3760) may be related? (also below)
 
 
-## Allow Apple virtualization to be used as a driver
+## Allow Apple virtualization to be used as a driver `#multipass`
 
 - [Replace on MacOS QEMU by Apple VZ](https://github.com/canonical/multipass/issues/3760)
 
@@ -21,16 +21,27 @@ Initially, the Multipass team had [bad experience](...) with the Apple Virtualiz
 
 However, *maybe* using such would allow e.g. the mount problems (and/or performance on small files?) to be remedied.
 
+>In 2025, Apple's made some releases on [Containerization](https://github.com/apple/containerization): 
+>
+>*"Swift package for running Linux containers on macOS"*.
+>
+>- Does this affect Multipass on Mac roadmap, stability, in any measurable way?
+>
+>Note: *"To build the Containerization package, you need: [...] Mac with Apple silicon"*, i.e. rules Intel-based Macs out.
 
-## FR: Built-in port forwarding
+
+## FR: Built-in port forwarding `#multipass`
 
 - [Port forwarding](https://github.com/canonical/multipass/issues/309)
 
+Lima does it. Apple Containerization framework likely as well.
 
+
+<!-- not really tracking; #hidden
 ## Lima project
 
 Transitioning to [Lima: Linux Machines](https://github.com/lima-vm/lima) could be a possibility if the features / quality of Multipass continues to degrade. <!-- "continues" as in mounts are worse in 1.14+ than in 1.13 -->
 
 - allows use of Apple VZ API (not only QEMU)
-- has file sharing **and port forwarding**
-
+- has file sharing and **port forwarding**
+-->
