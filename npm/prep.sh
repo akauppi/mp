@@ -12,6 +12,9 @@ set -e
 #
 MY_PATH=$(dirname $0)
 
+CUSTOM_ENV=$MY_PATH/custom.env
+CUSTOM_MOUNTS=$MY_PATH/custom.mounts.list
+
 # Create such a file to place your time-and-again commands (e.g. aliases):
 # <<
 #   alias ni='npm install'
@@ -91,6 +94,23 @@ append_bashrc() {
   fi
 }
 append_bashrc
+
+# Append env.vars in 'custom.env' (.env syntax) to '˙~/.bashrc'.
+#
+# Note: Code expects no spaces in the key or value
+#
+# tbd. Could gather the keys together, and concatenate as a single operation (perhaps shipping the tail over as a file).
+#   For now, we only use this for a single token API, so..
+#
+# tbd. Also, should "print"-something the lines so that no harmful tricks can be made (no newline allowed). However,
+#   that would be the user shooting themselves in the feet, so...
+#
+if [ -f $CUSTOM_ENV ]; then
+  multipass exec $MP_NAME -- bash -c "echo -e '\n# From \x27$(basename $CUSTOM_ENV)\x27:' >> ~/.bashrc"
+
+  cat $CUSTOM_ENV | grep -v "^#" | \
+    xargs -I LINE multipass exec $MP_NAME -- sh -c "echo export LINE >> ~/.bashrc"
+fi
 
 # Custom mounts, as
 # <<

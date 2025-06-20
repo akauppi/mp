@@ -1,56 +1,42 @@
-# Web + Cloudflare development
+# Cloudflare development
 
 For Web development with [Cloudflare](https://www.cloudflare.com/developer-platform/) as the platform.
    
-Has:
-
-- `node` (derived)
-- `npm` (derived)
+Adds to `npm` image:
 
 - `wrangler` CLI
 
 	>Note: Cloudflare says:
 	>
 	>>*Wrangler is installed locally into each of your projects. This allows you and your team to use the same Wrangler version, control Wrangler versions for each project, and roll back to an earlier version of Wrangler, if needed.*
-	>
-	> We might disobey here. If you are okay always aiming at using the latest tools, and all your projects
-	> are relatively active, it might not serve much to version control build/simulation tools, per each project.
 
-<!-- #whisper
-	Also note: 
+	We might disobey here. If you are okay always aiming at using the latest tools, and all your projects
+	are relatively active, it might not serve much to version control build/simulation tools, per each project. We treat the CLI as a **global**
+	dependency, not a project-wide one.
 	
-	- `wrangler` (globally installed) is 3x faster than `npx wrangler`, for each command.
+	Further argument is that one can *build* a Cloudflare web app without
+	having `wrangler` around (i.e. with the base `npm` image). It's only
+	needed for simulation and deployment. If it's not needed for the tests,
+	it can remain detached.
 
-	Installing *anything* with lots of small files in a mapped Multipass folder is slow. The author is not sure whether this is due to that - or something else.
-	<!_-- evidence:
-   ```
-    $ time wrangler whoami
-    ...
-    real	0m3.018s
-    user	0m0.966s
-    sys	0m0.660s
-    ```
-
-    ```
-    $ time npx wrangler whoami
-    ...
-    real	0m11.340s
-    user	0m1.896s
-    sys	0m1.429s
-    ```
--->
 
 ## Prelude
 
->See [`../web/README.md`](../web/README.md) for instructions on the generic tooling.
+See [`../README.md`](../README.md) for instructions on the generic tooling.
 
-## Using
+Set up a VM with `npm`.
 
-Create the VM by:
+
+## Steps
+
+### Installation
+
+Within that VM, do:
 
 ```
-$ web+cf/prep.sh
+$ npm install -g wrangler
 ```
+
 
 ### CLI login
 
@@ -60,7 +46,7 @@ There are two ways to tie your VM terminal to the Cloudflare account:
 
 This is normally the easy way, but doing it from within a VM requires a bit of assistance. It also grants a huge number of access rights to your VM - it's kind of a "whole sale" option. In addition, it does not cover services in Cloudflare beta.
 
-You may try both and decide for yourself.
+Try both and decide for yourself.
 
 <details><summary>Reveal detailed steps</summary>
 >
@@ -69,7 +55,7 @@ You may try both and decide for yourself.
 >Run this:
 >
 >```
->$ web+cf/sh/login-fwd.sh
+>$ MP_NAME=npm sh/login-fwd.sh
 >...
 >```
 >
@@ -149,7 +135,12 @@ Add the token in `~/.bashrc` so it gets loaded into the environment at VM restar
 ~$ . ~/.bashrc
 ```
 
->NOTE! Do place a copy of the token in a "safe place", especially if you intend to use it over longer periods. VM instances are kind of meant to be easily removed and re-created from scratch (by `multipass delete --purge`).
+>Pst. You can also enter it in `custom.env` on the host side; this way it'll get used for any subsequent VMs you create, automatically.
+
+<p />
+
+>NOTE! 
+>It's not a problem if you lose the token. It's easy to recreate one with the same access rights in the Cloudflare console.
 
 Now you are ready to go! 🌞
 
@@ -166,17 +157,6 @@ It will tell you if an update is available. If so:
 ```
 $ npm update -g wrangler
 ```
-
->Note. Before `3.60.3`, there were difficulties with the update. If you get any, you can just remove the wrangler state before reinstalling:
->
->```
->rm -rf ~/.npm-packages/lib/node_modules/wrangler
->```
-
-<!--
-3.60.3 -> 3.61.0		went fine
-3.61.0 -> 3.62.0		went fine
--->
 
 ## References
 
