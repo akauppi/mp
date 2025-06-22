@@ -22,9 +22,6 @@ _LOCAL_KEY=$HOME/.mp.key
 bold=$(printf '\033[1m')
 unbold=$(printf '\033[21m')
 
-#ul=$(printf '\033[4m')
-#unul=$(printf '\033[24m')
-
 _DAEMON=''
 if [[ "$1" == "-d" ]]; then
   _DAEMON=1

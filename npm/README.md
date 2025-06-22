@@ -1,7 +1,5 @@
 # Node development
 
-For Web development. 
-   
 Provides:
 
 - `node`
@@ -18,7 +16,7 @@ The `CHOKIDAR_USEPOLL` env.var. is defined, allowing hot-module-reloading to wor
 
 ### Further steps
 
-Unfortunately, Multipass has issues with mounted folders that contains lots of small files. To mitigate these issues - and this is also useful for keeping macOS and Linux binary modules apart - we do some mounts on the VM side.
+Unfortunately, Multipass has issues with mounted folders that contains lots of small files. To mitigate these issues - also useful for keeping macOS and Linux binary modules apart - we do some mounts on the VM side.
 
 #### `node_modules`
 
@@ -28,42 +26,57 @@ For **each project folder** you work in:
 $ openssl rand -hex 4
 a888a3f6		<-- use this as a random string; any string will do
 
-$ ID=a888a3f6
-$ install -d ~/.node_modules/$ID
+$ install -d ~/.node_modules/a888a3f6
 
-# Within the project folder that has 'node_modules'
-$ sudo mount --bind ~/.node_modules/$ID node_modules
+# add the lines in `/etc/fstab`:
+$ sudo nano /etc/fstab
+<<
+/home/ubuntu/.node_modules/{..id1..} /home/ubuntu/{..path..}/node_modules none user,bind,noauto,exec,rw,relatime,discard,commit=30 0 0
+<<
+
+$ sudo systemctl daemon-reload
 ```
 
-#### `.svelte-kit`
+About the mount options:
 
-For **each SvelteKit project**:
+- `user`: allows you to mount these from user space, without `sudo`
+- `noauto`: important so that the mounts won't happen in Linux startup. You cannot do the mounts e.g. in `~/.bashrc` since Multipass adds its mounts after that.
+- `exec`: allows `npm` commands to be executed; crucial
+
+#### `.svelte-kit` (optional)
+
+If your project uses SvelteKit, let's make a cache folder for it. This can be a memory disk (type `tmpfs`).
+
+>Note: For other frameworks, there may be similar cache folders. If you wish to optimize their performance, adopt these steps.
+
+For **each project folder** you work in:
 
 ```
-$ touch .svelte-kit
+$ openssl rand -hex 4
+518d730b		<-- use this as a random string; any string will do
 
-$ sudo mount -t tmpfs -o size=500m,uid=1000 abc .svelte-kit
+$ install -d .svelte-kit
+
+# add the lines in `/etc/fstab`:
+$ sudo nano /etc/fstab
+<<
+{..id2..} /home/ubuntu/{..path..}/.svelte-kit tmpfs user,noauto,rw,relatime,size=5120k,uid=1000,gid=1000,inode64 0 0
+<<
+
+$ sudo systemctl daemon-reload
 ```
 
----
+#### Using the mounts
 
-These two mounts make sure that small files do not need to be traversed over the host-VM boundary. They remain within the VM, and things work in native speed.
+Now, once and after each VM restart, do:
 
 ```
-{project folder}
-	\-- node_modules		--> ~/.node_modules/$ID
-	\-- .svelte-kit		--> tmp disk
+# within the project folder
+$ mount node_modules
+$ mount .svelte-kit
 ```
 
-#### Gotchas!!!
-
-The above arrangement works, but is FRAGILE!
-
-1. Mounts cannot be done in `.bashrc` because Multipass mounts happen only after it is processed. Thus, you need to **manually exercise them** for each session.
-2. The mounts need to be done after each VM restart: they do not persist. Way to persist them would be using `/etc/fstab` but the author wasn't able to get this working, properly. See `DEVS` folder.
-3. The mounts need to be done using `sudo`. While `/etc/fstab` entries allow a user to do a mount, and the mount does work, this arrangement was not compatible with `npm install`, especially or at least `esbuild`. Again, see the `DEVS` folder.
-
-While all this is **annoying** (mostly to the author because he doesn't understand what's wrong), it's... a best effort at this time. You do get native performance. The platform is solid. Just.. two `sudo`s.
+That's it!  Your `npm` development now works in near-native speed, but within a VM.
 
 
 ## Using: Exposing the port
@@ -91,7 +104,7 @@ You can now open the port in host browser.
 
 ### Alternatively, forward `localhost`
 
-An alternative (or: parallel) approach is forwarding the VM's `localhost` to the host. Multipass doesn't have built-in port forwarding (Jun'25) and this requires you to keep a terminal open. See [`../tools/port-fwd.sh`](../tools/port-fwd.sh) for ideas...
+An alternative (or: parallel) approach is forwarding the VM's `localhost` to the host. Multipass doesn't have built-in port forwarding (Jun'25) and this requires you to keep a terminal open. See [`tools/port-fwd.sh`](./tools/port-fwd.sh) for ideas...
 
 
 ## Using: Installing distribution tools

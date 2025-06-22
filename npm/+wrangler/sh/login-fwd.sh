@@ -33,4 +33,4 @@ _MSG="*
 * Once the CLI is happy (you may try 'wrangler whoami'), press a key and we'll close the port-forward.
 *"
 
-PORT=${_PORT} MP_NAME=${MP_NAME} MSG="${_MSG}" ${MY_PATH}/../../../tools/port-fwd.sh
+PORT=${_PORT} MP_NAME=${MP_NAME} MSG="${_MSG}" ${MY_PATH}/../../tools/port-fwd.sh
