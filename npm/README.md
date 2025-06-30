@@ -14,9 +14,37 @@ $ npm/prep.sh
 
 The `CHOKIDAR_USEPOLL` env.var. is defined, allowing hot-module-reloading to work (over a network mount) for frameworks using chokidar (e.g. Vite).
 
-### Further steps
+### Native performance on folders with lots of small files
 
 Unfortunately, Multipass has issues with mounted folders that contains lots of small files. To mitigate these issues - also useful for keeping macOS and Linux binary modules apart - we do some mounts on the VM side.
+
+<!--
+To see the difference in speed, with a `node_modules` that's populated:
+
+Without fix:
+
+<<
+$ time du -h -d 0 node_modules
+261M	node_modules
+
+real	0m9.735s
+user	0m0.000s
+sys	0m1.354s
+<<
+
+With the fix:
+
+<<
+$ time du -h -d 0 node_modules
+261M	node_modules
+
+real	0m0.033s
+user	0m0.006s
+sys	0m0.026s
+<<
+
+Note that much of the non-fixed time is spent "somewhere" - not reported by either 'sys' or 'user'.
+-->
 
 #### `node_modules`
 
