@@ -8,7 +8,11 @@ set -e
 #     perform similar actions manually - the way You like! :)
 #
 # Usage:
-#   $ PORT=x [MP_NAME=...] [MSG="...\n..."] {path-to}/port-fwd.sh [-d]
+#   $ PORT=x[,y] [MP_NAME=...] [MSG="...\n..."] {path-to}/port-fwd.sh [-d]
+#
+# Notes:
+#   After updates of Multipass, the key may have changed. Just remove the `~/.mp.key` and recreate it (as the script
+#   instructs).   // tbd. detect the situation when the key is wrong???
 #
 # References:
 #   - "Specify private key in SSH as string" (SO) [1]
@@ -48,19 +52,19 @@ if [[ ! -f $_LOCAL_KEY ]]; then
   Execute the command below. Leaving the otherwise hidden (needing sudo) key there should be fine; it cannot be reached
   by outside parties, anyways. And you can remove the copy after port forwarding is no longer necessary.
 
-  If you dislike the idea altogether, make some other custom workflow using this script as the inspiration / starting
-  point. E.g. you could 'sudo bash -c cat' the key, and pass it with a pipe. Or you may choose to run the whole
-  port-forwarding using 'sudo' access, eliminating the need for a local copy. (This means you trust 'ssh' and other
-  commands used to have full admin rights; push leads to shove).
+  If you dislike the idea altogether, you can still make some other workflow alongside this template.
 
   ${bold}sudo cp $(printf %q "$_KEY") $_LOCAL_KEY${unbold}
-  ${bold}chown $USER $_LOCAL_KEY${unbold}
+  ${bold}sudo chown $USER $_LOCAL_KEY${unbold}
+  ${bold}chmod 600 $_LOCAL_KEY${unbold}
 "
   false
 fi
 
+#DISABLED (see above)
 # Limit rights, ssh likes it as 600.
-chmod 600 $_LOCAL_KEY
+#
+#chmod 600 $_LOCAL_KEY
 
 # Pick the IP
 _MP_IP=$(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )
@@ -71,7 +75,15 @@ _MP_IP=$(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )
 #*
 #EOL1
 
-ssh -ntt -i ${_LOCAL_KEY} -o StrictHostKeyChecking=accept-new -L ${PORT}:localhost:${PORT} ubuntu@${_MP_IP} > /dev/null &
+# For each port, add '-L {port}:localhost:{port}' parameter
+_PORT_PARAMS=
+for p in ${PORT//,/ }
+do
+  _PORT_PARAMS="-L $p:localhost:$p ${_PORT_PARAMS}"
+    # reversed order doesn't matter
+done
+
+ssh -ntt -i ${_LOCAL_KEY} -o StrictHostKeyChecking=accept-new ${_PORT_PARAMS} ubuntu@${_MP_IP} > /dev/null &
 _PS_TO_KILL=$!
   # The process now runs in the background, and we have its id.
 
@@ -84,13 +96,13 @@ if [[ ! $_DAEMON ]]; then
 
   # '../web+cf/sh/login-fwd.sh' benefits from being able to inject a custom message.
   #
-  MSG=${MSG:-"\nSeeing port ${PORT}. KEEP THIS TERMINAL RUNNING.\n"}
+  MSG=${MSG:-"\nSeeing port(s) ${PORT}. KEEP THIS TERMINAL RUNNING.\n"}
   echo -e "${MSG}"
     # ^-- Quotes matter for proper output of ('web+cf/.../login-fwd.sh's) message. Do not remove.
 
   read -rsp $'Press a key to stop the sharing.\n' -n1 KEY
 else
-  echo "Seeing port ${PORT}.
+  echo "Seeing port(s) ${PORT}.
 
 To stop sharing, do ${bold}kill ${_PS_TO_KILL}${unbold}.
 "
