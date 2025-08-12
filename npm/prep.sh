@@ -28,12 +28,15 @@ CUSTOM_BASHRC=$MY_PATH/custom.bashrc
 # Provide defaults
 #
 MP_NAME=${MP_NAME:-npm}
-MP_PARAMS=${MP_PARAMS:---memory 4G --disk 5G --cpus 2}
+MP_PARAMS=${MP_PARAMS:---memory 4G --disk 7G --cpus 2}
   #
-  # $ mp info web
+	# Note:
+	#   - 5G disk wasn't enough (with 'wrangler' (CLI) installed and some real world usage); choked at 4.1G
+	#
+  # $ mp info npm
   #   <<
-  #   Disk usage:     2.1GiB out of 4.7GiB
-  #   Memory usage:   178.2MiB out of 3.8GiB
+  #   Disk usage:     2.2GiB out of 4.7GiB
+  #   Memory usage:   402.4MiB out of 3.8GiB
   #   <<
 	#
 	# Hint: Use 'multipass info' on the host to observe actual usage.

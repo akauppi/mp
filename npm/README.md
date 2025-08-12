@@ -160,3 +160,7 @@ $ npm install -g npm
 $ npm cache verify
 ```
 
+This can free some hundreds of MB's of disk space. 
+
+>For the author, it reduced disk use (as per `df -H ~/`) from 4.3GB to 3.7GB.
+
