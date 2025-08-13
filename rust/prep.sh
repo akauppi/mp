@@ -74,7 +74,7 @@ else
   multipass umount $MP_NAME
 fi
 
-# DISABLED; use 'rust+{desktop|emb}'
+# DISABLED; use 'rust/+{desktop|emb}'
 #|# Custom mounts, as
 #|# <<
 #|#   # can have comments

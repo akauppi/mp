@@ -52,7 +52,7 @@ CUSTOM_MOUNTS=$MY_PATH/custom.mounts.list
 # Build the foundation
 #
 MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS SKIP_SUMMARY=1 USE_ORIGINAL_MOUNT=${USE_ORIGINAL_MOUNT} \
-  ${MY_PATH}/../rust/prep.sh
+  ${MY_PATH}/../prep.sh
 
 # Mount our 'linux' folder
 #
@@ -110,6 +110,8 @@ cat <<EOF
 🍇 Your VM is ready.
 - 'probe-rs' and 'espflash' are directed to reach '$PROBE_RS_REMOTE' over ssh.
   You can change this by editing '~/.bashrc' within the VM.
+
+- 'ssh-copy-id $PROBE_RS_REMOTE' to make your access to 'probe-rs' and 'espflash' seamless.
 
 Next:
 - Map local folders with 'multipass mount --type=native {local path} $MP_NAME:'

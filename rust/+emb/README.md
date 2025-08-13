@@ -21,16 +21,40 @@ This gives the benefit that your development board is **galvanically isolated** 
 
 ## Preparations
 
+### Raspberry Pi <sub>(or Linux PC)</sub>
+
 If you already have the assisting computer (Raspberry Pi) set up, great! Feed its `ssh` user and IP to the creating script, below.
 
 If you don't, visit [`probe-rs-remote`](https://github.com/lure23/probe-rs-remote) to see how to set things up.
+
+### Project folders
+
+The idea is that your source code would remain on the host disk, shared with the Multipass VM (where the development tools sans IDE reside).
+
+Say you have a folder `~/path/to/circus`. This is how to share it with the VM, as `~/circus`.
+
+Create a file `rust/+emb/custom.mounts.list`:
+
+```
+#
+# Folders to be mounted to a new VM.
+#
+~/path/to/circus
+```
+
+You can use either home-based paths (`~/[...]`), or absolute paths.
+
+If you wish to change the name, or target position, of the folder, you'll need to use the manual steps (presented below). But for most cases this mechanism is painless, and it **automatically recreates the mappings** if you toss a VM away and create a new one!
+
+>Note: You do not need to have the `custom.mounts.list` file. You can start without, and map the work folders manually, as they are needed.
+
 
 ## Usage
 
 Create the VM by:
 
 ```
-$ [PROBE_RS_REMOTE={user@ip}] rust+emb/prep.sh
+$ [PROBE_RS_REMOTE={probe-rs@ip}] rust/+emb/prep.sh
 ...
 VM is ready.
 
@@ -42,26 +66,6 @@ VM is ready.
 To enable Xtensa targets, add `XTENSA=1` before the command. Be aware that this consumes ~1.5GiB more disk space from the image.
 -->
 
-
-## Mounting work folders
-
-The idea is that your software would remain on the host disk, shared with the Multipass VM (where the development tools sans IDE reside).
-
-Say you have a folder `/Some/path/to/circus`. This is how to share it with the VM, as `~/circus`.
-
->Note: We use "native" folder sharing, which is said to be faster than the default. It does, however, need the VM to be stopped when mounts are added/removed.
-
-```
-[host]$ multipass stop rust-emb
-```
-
-```
-[host]$ multipass mount --type=native /Some/path/to/circus rust-emb:
-```
-
-```
-[host]$ multipass shell rust-emb
-```
 
 ## Finishing `probe-rs` tunneling
 
@@ -76,7 +80,7 @@ Enter the VM:
 $ multipass shell rust-emb
 ```
 
-What is needed is:
+What is needed:
 
 1. Confirm the `PROBE_RS_REMOTE` value
 
@@ -128,6 +132,30 @@ $ probe-rs list
 The following debug probes were found:
 [0]: ESP JTAG -- 303a:1001:54:32:04:07:15:10 (EspJtag)
 ```
+
+
+## Mounting work folders
+
+Above, we showed how to create a `custom.mounts.list` file, to map your work folders between the host and the VM.
+
+This mechanism only applies to when the VMs are created. If you need to change the mappings, or add a new one, you'll be using the normal `multipass` CLI.
+
+>Note: We use "native" folder sharing, which is said to be faster than the default. It does, however, need the VM to be stopped when mounts are added/removed.
+
+```
+[host]$ multipass stop rust-emb
+```
+
+```
+[host]$ multipass mount --type=native /Some/path/to/circus rust-emb:
+```
+
+>If you wish to change the target name, just append it to the `rust-emb:`. Consult `multipass mount --help` for details.
+
+```
+[host]$ multipass shell rust-emb
+```
+
 
 
 ## Maintenance
@@ -189,17 +217,3 @@ Once you have `cargo` and suitable toolchains installed, adding more tools is ea
 	```
 	$ cargo install bindgen-cli
 	```
-
-## Next
-
-```
-$ multipass shell rust-emb
-```
-
-
-<!--
-## References
-
-- [`probe-rs` docs](https://probe.rs/docs/)
--->
-

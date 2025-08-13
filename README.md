@@ -1,6 +1,6 @@
 # mp
 
-Scripts for setting up [Multipass](https://multipass.run) virtual machines, in the way of WSL, but on macOS.
+Scripts for setting up [Multipass](https://multipass.run) virtual machines.
 
 <!--
 > [!NOTE]
@@ -70,7 +70,7 @@ $ rust/prep.sh
 [...]
 ```
 
->It works the same for `web/prep.sh`.
+>It works the same for `npm/prep.sh`.
 
 ```
 Multipass IP (rust): 192.168.64.74
@@ -112,33 +112,20 @@ Change your Multipass terminal's look by `(right click)` > `Show Inspector`. Dif
 
 *Figure 1. Ocean is the author's favourite*  <!-- brief editor, from the 1990's -->
 
+
+<!-- #R; works best within the `rust/+emb` folder, not topmost.
+
 ### Accessing USB devices `#embedded`
 
-Multipass does not provide USB pass-through. There are ways around this, however. Look for USB/IP (Windows and Linux can be used as a server); also, some development tools have native remote protocols ([`probe-rs`](https://probe.rs)).
+Multipass does not provide USB pass-through. There are ways around this, however. 
 
-<!-- #hidden
-## 📛WARNING ON MULTIPASS 1.14.x!!
+- Initially, the author used USB/IP (Windows and Linux can be used as a server)
 
->Have not checked whether this applies to 1.15.0 as well. Safe to assume it does.
+..but went for a remote proxy approach, instead:
 
-It has issues with mounts, and/or active instances in general. Until those are resolved, you should:
+- [probe-rs-remote](https://github.com/lure23/probe-rs-remote)
 
-- **AVOID** any maintenance-like commands on a **running instance**
-
-   This means no `multipass mount`, `umount`, `restart` or `delete`.
-   
-   Instead, do a `multipass stop` first, and then the required maintenance command (turning `restart` into a `stop` + `start`).
-   
-   This seems to immensely (perhaps completely!) improve the stability of the Multipass VM.
-   
-- IF you end up in suspicious errors, instantly:
-
-	- restart your host
-	- `stop` and `delete --purge` all instances
-	- check that `multipass info` gives "no instances"
-	- ...continue
-
-A bit harsh, but.. since you can easily recreate the VM's from nothing (with `mp`), shouldn't be worth risking the stability. 
+Also, some development tools have native remote protocols ([`probe-rs`](https://probe.rs)).
 -->
 
 ## Troubleshooting
