@@ -110,8 +110,7 @@ cat <<EOF
 🍇 Your VM is ready.
 - 'probe-rs' and 'espflash' are directed to reach '$PROBE_RS_REMOTE' over ssh.
   You can change this by editing '~/.bashrc' within the VM.
-
-- 'ssh-copy-id $PROBE_RS_REMOTE' to make your access to 'probe-rs' and 'espflash' seamless.
+- 'ssh-copy-id $PROBE_RS_REMOTE' to make your access seamless (no pw each time!).
 
 Next:
 - Map local folders with 'multipass mount --type=native {local path} $MP_NAME:'
