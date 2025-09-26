@@ -59,7 +59,7 @@ $ install -d ~/.node_modules/a888a3f6
 # add the lines in `/etc/fstab`:
 $ sudo nano /etc/fstab
 <<
-/home/ubuntu/.node_modules/{..id1..} /home/ubuntu/{..path..}/node_modules none user,bind,noauto,exec,rw,relatime,discard,commit=30 0 0
+/home/ubuntu/.node_modules/{..id1..} /home/ubuntu/{..path..}/node_modules none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
 <<
 
 $ sudo systemctl daemon-reload
@@ -88,7 +88,7 @@ $ install -d .svelte-kit
 # add the lines in `/etc/fstab`:
 $ sudo nano /etc/fstab
 <<
-{..id2..} /home/ubuntu/{..path..}/.svelte-kit tmpfs user,noauto,rw,relatime,size=5120k,uid=1000,gid=1000,inode64 0 0
+{..id2..} /home/ubuntu/{..path..}/.svelte-kit tmpfs user,noauto,rw,noatime,nodiratime,size=5120k,uid=1000,gid=1000,inode64 0 0
 <<
 
 $ sudo systemctl daemon-reload
@@ -160,7 +160,12 @@ $ npm install -g npm
 $ npm cache verify
 ```
 
-This can free some hundreds of MB's of disk space. 
+Run this occasionally. Keep an eye on your disk space consumption (8GB should be enough, but the `~/.npm` cache does grow..).
 
->For the author, it reduced disk use (as per `df -H ~/`) from 4.3GB to 3.7GB.
+Observed savings:
+
+- 4.3GB -> 3.7GB (0.6GB)
+- 8.2GB -> 6.2GB (2.0GB)
+
+>Use `multipass info npm` (on the host) to see the available and used disk space.
 

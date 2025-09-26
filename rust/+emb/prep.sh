@@ -31,6 +31,7 @@ PROBE_RS_REMOTE=${PROBE_RS_REMOTE:-probe-rs@192.168.1.199}
 #
 USE_ORIGINAL_MOUNT=0
 
+CUSTOM_ENV=$MY_PATH/custom.env
 CUSTOM_MOUNTS=$MY_PATH/custom.mounts.list
 
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
@@ -88,6 +89,19 @@ if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
 else
   multipass stop $MP_NAME
   multipass umount $MP_NAME
+fi
+
+# Append env.vars in 'custom.env' (.env syntax) to '˙~/.bashrc'.
+#
+# Note: Code expects no spaces in the key or value
+#
+# tbd. Could gather the keys together, and concatenate as a single operation (perhaps shipping the tail over as a file).
+#
+if [ -f $CUSTOM_ENV ]; then
+  multipass exec $MP_NAME -- bash -c "echo -e '\n# From \x27$(basename $CUSTOM_ENV)\x27:' >> ~/.bashrc"
+
+  cat $CUSTOM_ENV | grep -v "^#" | \
+    xargs -I LINE multipass exec $MP_NAME -- sh -c "echo export LINE >> ~/.bashrc"
 fi
 
 # Custom mounts, as

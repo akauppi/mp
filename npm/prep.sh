@@ -27,11 +27,29 @@ CUSTOM_BASHRC=$MY_PATH/custom.bashrc
 
 # Provide defaults
 #
+# Note: Keep an eye on the disk usage. Don't let free space get (much) below 1GB. If it does, 'npm install' etc. starts
+#       to misbehave, and it DOES NOT necessarily mention lack of disk space as the root cause!!
+#
 MP_NAME=${MP_NAME:-npm}
-MP_PARAMS=${MP_PARAMS:---memory 4G --disk 7G --cpus 2}
+MP_PARAMS=${MP_PARAMS:---memory 4G --disk 8G --cpus 2}
   #
 	# Note:
-	#   - 5G disk wasn't enough (with 'wrangler' (CLI) installed and some real world usage); choked at 4.1G
+	#   - 7G disk wasn't enough (with two npm-using projects, Playwright and 'wrangler'). 20-Sep-25
+	#
+	#         ~/.npm                  => 3GB    <--- REDUCES BY 2GB by 'npm cache verify'
+	#         ~/.node_modules cache   => ca. 200MB / project
+	#         ~/.cache
+	#             /ms-playwright      => 326MB
+	#         ~/.npm-packages         => 200MB
+	#
+	#   <<
+	#     $ npm cache verify
+  #     Cache verified and compressed (~/.npm/_cacache)
+  #     Content verified: 1271 (916647549 bytes)
+  #     Content garbage-collected: 877 (2171927570 bytes)   <<--- 2.1GB reclaimed
+  #     Index entries: 1271
+  #     Finished in 17.519s
+	#   <<
 	#
   # $ mp info npm
   #   <<

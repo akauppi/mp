@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# tbd. Change approach to what worked with 'FY/website'. AK30-Aug-25
+
 # See a service running within Multipass VM as 'localhost' on the host.
 #
 # Note: This is ONLY A MATTER OF CONVENIENCE. You can always point the browser to the full '{ip}:{port}' URL.
@@ -18,7 +20,7 @@ set -e
 #   - "Specify private key in SSH as string" (SO) [1]
 #     -> https://stackoverflow.com/questions/12041688/specify-private-key-in-ssh-as-string
 #
-MP_NAME=${MP_NAME:-web}
+MP_NAME=${MP_NAME:-npm}
 
 _KEY=/var/root/Library/Application\ Support/multipassd/ssh-keys/id_rsa
 _LOCAL_KEY=$HOME/.mp.key
@@ -49,7 +51,7 @@ if [[ ! -f $_LOCAL_KEY ]]; then
   To use this script, you need to provide a _user_space_ copy of the key Multipass uses between the host and VM's
   at $_LOCAL_KEY. It's currently not there.
 
-  Execute the command below. Leaving the otherwise hidden (needing sudo) key there should be fine; it cannot be reached
+  Execute the commands below. Leaving the otherwise hidden (needing sudo) key there should be fine; it cannot be reached
   by outside parties, anyways. And you can remove the copy after port forwarding is no longer necessary.
 
   If you dislike the idea altogether, you can still make some other workflow alongside this template.
