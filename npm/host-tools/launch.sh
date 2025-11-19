@@ -1,16 +1,10 @@
 #!/bin/bash
 set -e
 
-# tbd. Change approach to what worked with 'FY/website'. AK30-Aug-25
-
-# See a service running within Multipass VM as 'localhost' on the host.
-#
-# Note: This is ONLY A MATTER OF CONVENIENCE. You can always point the browser to the full '{ip}:{port}' URL.
-#     Also, if the assumptions done in this script are not to your liking, you can easily pick the commands and
-#     perform similar actions manually - the way You like! :)
+# Launch a Multipass VM so that port '$PORT' is forwarded to the host.
 #
 # Usage:
-#   $ PORT=x[,y] [MP_NAME=...] [MSG="...\n..."] {path-to}/port-fwd.sh [-d]
+#   $ PORT=3000,3123 host-tools/launch.sh
 #
 # Notes:
 #   After updates of Multipass, the key may have changed. Just remove the `~/.mp.key` and recreate it (as the script
@@ -28,14 +22,9 @@ _LOCAL_KEY=$HOME/.mp.key
 bold=$(printf '\033[1m')
 unbold=$(printf '\033[21m')
 
-_DAEMON=''
-if [[ "$1" == "-d" ]]; then
-  _DAEMON=1
-fi
-
 usage() {
   echo >&2 "Usage:
-  $ PORT=... [MP_NAME=...] $0 [-d]
+  $ PORT=3000,3123[,...] [MP_NAME=...] $0
 "
 }
 
@@ -63,19 +52,31 @@ if [[ ! -f $_LOCAL_KEY ]]; then
   false
 fi
 
-#DISABLED (see above)
-# Limit rights, ssh likes it as 600.
-#
-#chmod 600 $_LOCAL_KEY
+# Launch. Without this, it doesn't have an IP; nor can we test the validity of the cached key.
+multipass start $MP_NAME
 
 # Pick the IP
 _MP_IP=$(multipass info $MP_NAME | grep IPv4 | cut -w -f 2 )
 
-#cat <<EOL1
-#*
-#* Going to forward the port '${_MP_IP}:${PORT}' as 'localhost:${PORT}'.
-#*
-#EOL1
+# Check whether '~/.mp.key' is still valid.
+#
+# Note: We cannot simply diff the keys, because haven't access to the original key. However, if we launch the VM and
+#     try to reach it with the cached key, it will fail if the key isn't valid (any more).
+#
+
+# Ensure the key is valid
+#
+#   tbd. fully uninstall Multipass (keep the cached key)
+#       - re-install; has the original key changed?
+#       - launch; do we see the error?
+#
+ssh -i ${_LOCAL_KEY} -o StrictHostKeyChecking=accept-new ubuntu@${_MP_IP} whoami > /dev/null || (
+  echo >&2 "
+  Local MP key doesn't seem to work. Please re-cache it by removing (rm ${_LOCAL_KEY}) and re-running
+  this command, for instructions. This may be due to Multipass having been updated.
+"
+  false
+)
 
 # For each port, add '-L {port}:localhost:{port}' parameter
 _PORT_PARAMS=
@@ -85,7 +86,15 @@ do
     # reversed order doesn't matter
 done
 
-ssh -ntt -i ${_LOCAL_KEY} -o StrictHostKeyChecking=accept-new ${_PORT_PARAMS} ubuntu@${_MP_IP} > /dev/null &
+# Note:
+#   -E: "Append debug logs to log_file instead of standard error". Without it, the console gets dumped with
+#       <<
+#         channel 3: open failed: connect failed: Connection refused
+#       <<
+#       ..once you stop the service (e.g. 'npm run dev') within the VM. We want the forward to pick up again, if there's
+#       anyone answering that port within VM. And doing this quietly!
+#
+ssh -ntt -i ${_LOCAL_KEY} -o StrictHostKeyChecking=accept-new -E /dev/null ${_PORT_PARAMS} ubuntu@${_MP_IP} > /dev/null &
 _PS_TO_KILL=$!
   # The process now runs in the background, and we have its id.
 
@@ -93,21 +102,11 @@ cleanup() {
   kill ${_PS_TO_KILL}
 }
 
-if [[ ! $_DAEMON ]]; then
-  trap cleanup EXIT
+#|cat <<EOL1
+#|*
+#|* Forwarding the port(s) '${PORT}' as 'localhost'. (ps id ${_PS_TO_KILL})
+#|*
+#|EOL1
 
-  # '../web+cf/sh/login-fwd.sh' benefits from being able to inject a custom message.
-  #
-  MSG=${MSG:-"\nSeeing port(s) ${PORT}. KEEP THIS TERMINAL RUNNING.\n"}
-  echo -e "${MSG}"
-    # ^-- Quotes matter for proper output of ('web+cf/.../login-fwd.sh's) message. Do not remove.
-
-  read -rsp $'Press a key to stop the sharing.\n' -n1 KEY
-else
-  echo "Seeing port(s) ${PORT}.
-
-To stop sharing, do ${bold}kill ${_PS_TO_KILL}${unbold}.
-"
-fi
-
-# done
+# Launch the Multipass shell
+multipass shell ${MP_NAME}

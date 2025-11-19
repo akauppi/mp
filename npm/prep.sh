@@ -141,9 +141,46 @@ fi
 # <<
 if [ -f $CUSTOM_MOUNTS ]; then
   multipass stop $MP_NAME
-  cat $CUSTOM_MOUNTS | grep -v "^#" | sed "s!^~!$HOME!" | \
+
+  cat $CUSTOM_MOUNTS | grep -v "^#" | sed "s|^~|$HOME|" | \
     xargs -I X multipass mount --type=native X $MP_NAME:
+
   multipass start $MP_NAME
+
+  # For each such mount (project folder), prepare '/fstab/etc' entries
+  #
+  # Prepare basis in '/etc/fstab' for mounting the folders needed to retain performance. At the least, this means the
+  # user gets a template to base their modifications on.
+  #
+  # <<
+  #   /home/ubuntu/.node_modules/ZOO_BLE_webapp /home/ubuntu/ZOO-BLE-webapp/node_modules none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
+  #   abc5435435 /home/ubuntu/ZOO-BLE-webapp/.svelte-kit tmpfs user,noauto,rw,noatime,nodiratime,size=5120k,uid=1000,gid=1000,inode64 0 0
+  # <<
+  #
+  _TMP_FILE = .fstab.tmp
+  true > ${_TMP_FILE}
+
+  # Loop through all the entries' *last segment*.
+  #
+  _CACHE_NODE_MODULES = "~/.cache/node_modules"
+
+  cat $CUSTOM_MOUNTS | grep -v "^#" | sed "s|^~|$HOME|" | \
+    xargs -n 1 basename | \
+      while read -r _X; do
+        # Create a cache for that one
+        multipass exec $MP_NAME -- bash -c "install -d ${_CACHE_NODE_MODULES}/${_X}"
+
+        echo >> $_TMP_FILE "
+/home/ubuntu/${_CACHE_NODE_MODULES:~/=}/${_X} /home/ubuntu/${_X}/node_modules none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
+sk${_RANDOM} /home/ubuntu/${_X}/.svelte-kit tmpfs user,noauto,rw,noatime,nodiratime,size=5120k,uid=1000,gid=1000,inode64 0 0
+"
+      done
+
+  # Transfer the file to VM, and append there to '/etc/fstab'
+  multipass transfer ${_TMP_FILE} ${MP_NAME}:
+  multipass exec $MP_NAME -- bash -c "(sudo cat ${_TMP_FILE} >> /etc/fstab)"  # && rm ${_TMP_FILE}"
+
+  rm ${_TMP_FILE}
 fi
 
 if [ "$SKIP_SUMMARY" != "1" ]; then

@@ -1,6 +1,9 @@
 # Cloudflare development
 
-For Web development with [Cloudflare](https://www.cloudflare.com/developer-platform/) as the platform.
+Instructions for how to add `wrangler` CLI to your Multipass setup.
+
+>[!IMPORTANT]
+>The author would use two VM's for cloud development: one, plain `npm` for development and another for deployments. This limits the exposure: cloud vendor tokens are available only when needed.
    
 Adds to `npm` image:
 
@@ -10,26 +13,20 @@ Adds to `npm` image:
 	>
 	>>*Wrangler is installed locally into each of your projects. This allows you and your team to use the same Wrangler version, control Wrangler versions for each project, and roll back to an earlier version of Wrangler, if needed.*
 
-	We might disobey here. If you are okay always aiming at using the latest tools, and all your projects
-	are relatively active, it might not serve much to version control build/simulation tools, per each project. We treat the CLI as a **global**
-	dependency, not a project-wide one.
+	We might disobey here. If you are okay always aiming at using the latest tools, and all your projects are relatively active, it might not serve much to version control build/simulation tools, per each project. We treat the CLI as a **global** tool, not a per-project dependency.
 	
-	Further argument is that one can *build* a Cloudflare web app without
-	having `wrangler` around (i.e. with the base `npm` image). It's only
-	needed for simulation and deployment. If it's not needed for the tests,
-	it can remain detached.
-
-
-## Prelude
-
-See [`../README.md`](../README.md) for instructions on the generic tooling.
-
-Set up a VM with `npm`.
+	Further argument is that one can *build* a Cloudflare web app without having `wrangler` around. It's only needed for simulation and deployment. If it's not needed for the tests, it can remain detached.
 
 
 ## Steps
 
-### Installation
+See [`../README.md`](../README.md) for instructions on the generic tooling.
+
+Set up a VM with `npm`, but name it something else:
+
+```
+$ MP_NAME=wrangler ./prep.sh
+```
 
 Within that VM, do:
 
@@ -37,81 +34,99 @@ Within that VM, do:
 $ npm install -g wrangler
 ```
 
-
 ### CLI login
 
-There are two ways to tie your VM terminal to the Cloudflare account:
+There are two ways to tie your VM terminal to the Cloudflare account.
+
+They both have their pros and cons. Let's look at each of them in turn, and then you can then choose, which fits best for you. :)
+
 
 #### A. Using `wrangler login`
 
-This is normally the easy way, but doing it from within a VM requires a bit of assistance. It also grants a huge number of access rights to your VM - it's kind of a "whole sale" option. In addition, it does not cover services in Cloudflare beta.
+The port `8976` needs to be shared from the VM, so we start it by (in the parent folder):
 
-Try both and decide for yourself.
+```
+$ PORT=8976 MP_NAME=wrangler ./host-tools/launch.sh
+```
 
-<details><summary>Reveal detailed steps</summary>
->
->To do the login dance, the port `8976` of the VM must be visible in your *host* as `localhost:8976` (so that a browser will reach it, after authentication).
->
->Run this:
->
->```
->$ MP_NAME=npm sh/login-fwd.sh
->...
->```
->
->The script sets up a port forward and instructs you to run the command `wrangler login browser=false` in the VM shell, while that port forward is active.
->
->Open the provided URL and Cloudflare lists the permissions you are about to give the VM:
->
->>![](.images/login-props.png)
->
->Once the VM states that login has succeeded, let the host script run to completion. It will remove the port forwarding.
-</details>
+Within the VM:
+
+```
+$ wrangler login browser=false
+```
+
+Open the provided URL and Cloudflare lists the permissions you are about to give the VM:
+
+![](.images/login-props.png)
+
+Once the VM states that login has succeeded, you can use the `wrangler` CLI to control your account, make deployments etc.
 
 
-#### B. Login with custom API tokens
+#### B. Login with API tokens
 
-This is the recommended choice, by Cloudflare. Using API tokens allows you *minute* control to what the CLI can and can not do. It's always good to run with the minimum set of access rights - especially if you deal with production systems.
+Using API tokens allows you *minute* control to what the CLI can and can not do. It's always good to run with the minimum set of access rights - especially if you deal with production systems.
 
 Also, some Cloudflare services (e.g. PubSub, as of May'24) [will request you](https://developers.cloudflare.com/pub-sub/guide/#3-fetch-your-credentials) to create a custom access token.
 
-One more plus - no special hoops are needed! :) Just a browser, copy-paste. Done!
-
 **Creating an API token**
 
-Visit Cloudflare > Dashboard > `My Profile` > [API tokens](https://dash.cloudflare.com/profile/api-tokens).
+Visit Cloudflare > Dashboard > `Profile` > [API tokens](https://dash.cloudflare.com/profile/api-tokens).
 
->![](.images/custom-api-token.png)         
+>![](.images/my-profile.png)
+
+- `Create Token`
+
+>![](.images/create-token.png)
+
+- `Edit Cloudflare Workers` > `Use template`
+
+>![](.images/granular-access.png)
 
 **Notice that the first pull-down menu works as a tree structure for the permissions.** If you don't find something (e.g. "membership") under `Account`, change to `User`.
 
-Here are permissions needed for deploying a Cloudflare Pages app (as of Nov'24). You will be able to edit these later, for the same token.
+---
 
-|           | permission                  | can    | comment                                                     |
-|-----------|-----------------------------|--------|-------------------------------------------------------------|
-| `Account` | `Account Settings`          | `Read` |                                                             |
-| `Account` | `Access: Apps and Policies` | `Edit` |                                                             |
-| `User`    | `User Details`              | `Read` | `wrangler whoami` needs this                                |
-| `User`    | `Memberships`               | `Edit` | `/membership` API; SvelteKit deployment                     |
-| `Account` | `Cloudflare Pages`          | `Edit` | `/accounts/{id}/pages/projects/{project-id}` API; SvelteKit |
+Here are the permissions needed for deploying any Cloudflare Worker app. 
+
+You might want to reduce them a bit - or leave as is. You will also be able to edit these later, for the same token.
+
+Here are the minimum rights the author thinks are necessary, for deploying a static web site:
+
+||permission|can|comment|
+|---|---|---|---|
+|`Account`|`Account Settings`|`Read`||
+|`User`|`User Details`|`Read`|`wrangler whoami` needs this|
+|`Account`|`Workers Tail`|`Read`||
+|`User`|`Memberships`|`Edit`|`/membership` API; SvelteKit deployment|
+|`Account`|`Workers Observability`|`Edit`||
 
 <!--
-|...|	do not be afraid to add more lines, above
+|`Account`|`Access: Apps and Policies`|`Edit`||
+|`Account`|`Cloudflare Pages`|`Edit`|`/accounts/{id}/pages/projects/{project-id}` API; SvelteKit|
+-->
+
+<!--
+|...|	do not be afraid to edit the set, above
 -->
 
 In addition, you may want to change `Account Resources` to just your current account.
 
->Note: 
->If you later come to edit the permissions, **make sure to `Continue to summary` and `Update token`:
+If you don't limit the account here (and have access to multiple), you will be interactively *asked* about the account, when doing deployments:
+
+![](.images/select-account.png)
+
+>[!NOTE]
+>
+>If you later come to edit the permissions, **make sure to** `Continue to summary` and `Update token`:
 >
 > ![](.images/update-token.png) 
 
-Complete the creation and you'll get a token like `Blah0[...]fuchS`.
+Complete the creation and you'll get a token like `Blah0[...]alhNF`.
 
 >Try it out in the VM:
 >
 >```
->~$ CLOUDFLARE_API_TOKEN={token here} wrangler whoami
+>$ CLOUDFLARE_API_TOKEN={token here} wrangler whoami
 >...
 >Getting User settings...
 >👋 You are logged in with an API Token, associated with the email {snip}!
@@ -135,14 +150,29 @@ Add the token in `~/.bashrc` so it gets loaded into the environment at VM restar
 ~$ . ~/.bashrc
 ```
 
+<!-- #hidden; don't suggest to have it on all `npm` VM's
 >Pst. You can also enter it in `custom.env` on the host side; this way it'll get used for any subsequent VMs you create, automatically.
 
 <p />
+-->
 
 >NOTE! 
 >It's not a problem if you lose the token. It's easy to recreate one with the same access rights in the Cloudflare console.
 
 Now you are ready to go! 🌞
+
+
+### Comparison of approaches: A vs. B
+
+||**`wrangler login`**|API tokens|
+|---|---|---|
+|Setup|by interactive login|by creating API tokens|
+|Granularity|coarse|detailed|
+|Good for|first tests|production use|
+|Products in beta|no|yes|
+
+Using API tokens is the recommended choice, by Cloudflare.
+
 
 ## Maintenance
 
@@ -157,6 +187,13 @@ It will tell you if an update is available. If so:
 ```
 $ npm update -g wrangler
 ```
+
+## Final... words
+
+You might not need any of the above.
+
+Cloudflare has nice [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) CI, which can track changes to your GitHub repo, and deploy them automatically.
+
 
 ## References
 

@@ -2,149 +2,229 @@
 
 Provides:
 
-- `node`
-- `npm` 24
+- `node` (latest even [current version](https://nodejs.org/en/about/previous-releases#release-schedule))
+- `npm`
+
+
+## Prepare: Host side setup (`security` note!)
+
+The whole point of sandboxing the `npm` environment to a VM is that `npm` modules wouldn't get access to your main account's files (emails, pictures, other documents).
+
+By default, installing `npm` modules do get such access, and your IDE is likely doing this all the time, even without you realizing. It's based on *trusting* the npm module authors that you use (and the modules they use, and so forth...).
+
+Let's plug this, first!
+
+Create a file `~/.npmrc`:
+
+```
+package-lock=false
+ignore-scripts=true
+```
+
+This bans two things for *any* `npm` on your host:
+
+- writes to `package-lock.json`. We'll update the file from the VM, but want to keep it shared.
+- running pre/post-install scripts of `npm` packages, thus making `npm install` safe.
+
+After this change, you can no longer debug or run `npm` websites, on your host. Let's set up a VM for that!
 
 
 ## Steps
 
 ```
 $ npm/prep.sh
+...
+v24.8.0
+11.6.0
 ```
 
-The `CHOKIDAR_USEPOLL` env.var. is defined, allowing hot-module-reloading to work (over a network mount) for frameworks using chokidar (e.g. Vite).
+You now have a working Node / `npm` VM, but we need to do quite a bit of tuning on it, to make things work smooth.
 
-### Native performance on folders with lots of small files
+Bare with us: all efforts have been taken to minimize your manual labour. But we just cannot make the setup fully automatic.
 
-Unfortunately, Multipass has issues with mounted folders that contains lots of small files. To mitigate these issues - also useful for keeping macOS and Linux binary modules apart - we do some mounts on the VM side.
 
-<!--
-To see the difference in speed, with a `node_modules` that's populated:
+### Problem #1: Multipass performance on shared folders degrades if there are lots of small files
 
-Without fix:
+We want to share the source code from the host file system, with the VM. 
 
-<<
-$ time du -h -d 0 node_modules
-261M	node_modules
+However, `npm` does not allow moving its `node_modules` folder elsewhere (to a VM-local folder), and leaving it shares grinds performance a *LOT* (like 0.1x speed).
 
-real	0m9.735s
-user	0m0.000s
-sys	0m1.354s
-<<
+**Countermeasures**
 
-With the fix:
+After ensuring there is a `node_modules` folder, we *can* mount it, VM-side, to a local folder.
 
-<<
-$ time du -h -d 0 node_modules
-261M	node_modules
-
-real	0m0.033s
-user	0m0.006s
-sys	0m0.026s
-<<
-
-Note that much of the non-fixed time is spent "somewhere" - not reported by either 'sys' or 'user'.
--->
-
-#### `node_modules`
-
-For **each project folder** you work in:
+The target for this is selected to be:
 
 ```
-$ openssl rand -hex 4
-a888a3f6		<-- use this as a random string; any string will do
-
-$ install -d ~/.node_modules/a888a3f6
-
-# add the lines in `/etc/fstab`:
-$ sudo nano /etc/fstab
-<<
-/home/ubuntu/.node_modules/{..id1..} /home/ubuntu/{..path..}/node_modules none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
-<<
-
-$ sudo systemctl daemon-reload
+~/.cache/node_modules/{project name}
 ```
 
-About the mount options:
+This means instead of your `~/abc/node_modules` (for project `abc`, see mounting below), VM will use `~/.cache/node_modules/abc`. 
+
+>[! NOTE]
+>This is great also for another reason: the OS'es of your host and VM are different, and this causes binary npm modules to conflict, between the two. Once the host (the IDE) and the VM (actual development 
+>environment) use different folders, they'll not stomp on each other.
+
+**What we do automatically**
+
+In the file `custom.mounts.list`, you can define the names of the folders where your `npm` projects' sources are. These will be mapped to the VM, using the last part of the path. Example:
+
+```
+# comment
+~/Git/averell
+/Users/dalt/sources/joe
+```
+
+..will cause folders `~/averell` and `~/joe`, VM side.
+
+For these folders, we automatically add lines in the `/etc/fstab` file (VM), allowing them to be user space -mounted on your command:
+
+```
+$ cd averell
+$ mount node_modules
+$ mount .svelte-kit		# if you were to have a SvelteKit project
+```
+
+See the contents of `/etc/fstab` if you wish to know the details. Also, if you mount project folders later, manually, copy the entries so your new folders can do the mounts.
+
+The `.svelte-kit` folder is mounted to a memory disk. Its contents don't need to remain over a VM restart.
+
+<details><summary>**Details about the mount options**</summary>
+
+```
+/home/ubuntu/.cache/node_modules/averell /home/ubuntu/averell/node_modules none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
+sk-averell /home/ubuntu/averell/.svelte-kit tmpfs user,noauto,rw,noatime,nodiratime,size=5120k,uid=1000,gid=1000,inode64 0 0
+```
 
 - `user`: allows you to mount these from user space, without `sudo`
-- `noauto`: important so that the mounts won't happen in Linux startup. You cannot do the mounts e.g. in `~/.bashrc` since Multipass adds its mounts after that.
+- `noauto`: important so that the mounts won't happen in Linux startup. You cannot do the mounts e.g. in `~/.bashrc` since Multipass adds its mounts only after that.
 - `exec`: allows `npm` commands to be executed; crucial
+</details>
 
-#### `.svelte-kit` (optional)
 
-If your project uses SvelteKit, let's make a cache folder for it. This can be a memory disk (type `tmpfs`).
+That's it! 
 
->Note: For other frameworks, there may be similar cache folders. If you wish to optimize their performance, adopt these steps.
+The mounting is valid as long as your VM runs. If you need to restart it, you will need to redo the mounts. This is a good reason to add them in your `~/.bashrc`.
 
-For **each project folder** you work in:
+HOWEVER, just adding `mount` will cause multiple mounts. There's a script in `~/bin/mp-prime.sh` for this purpose. Given a folder name, it checks whether there's already a mount and mounts only if not. Use it if you wish to have the mounts always be enforced by `~/.bashrc`.
 
-```
-$ openssl rand -hex 4
-518d730b		<-- use this as a random string; any string will do
+<!-- tbd. test the `mp-prime` approach
+-->
 
-$ install -d .svelte-kit
 
-# add the lines in `/etc/fstab`:
-$ sudo nano /etc/fstab
-<<
-{..id2..} /home/ubuntu/{..path..}/.svelte-kit tmpfs user,noauto,rw,noatime,nodiratime,size=5120k,uid=1000,gid=1000,inode64 0 0
-<<
+## Steps (...continued!)
 
-$ sudo systemctl daemon-reload
-```
-
-#### Using the mounts
-
-Now, once and after each VM restart, do:
+Once the `npm/prep.sh` has finished, you have a VM with `node` and `npm` on it.
 
 ```
-# within the project folder
+[host]$ multipass info npm
+Name:           npm
+State:          Running
+Snapshots:      0
+IPv4:           192.168.64.219
+Release:        Ubuntu 24.04.3 LTS
+Image hash:     f1652d29d497 (Ubuntu 24.04 LTS)
+CPU(s):         2
+Load:           0.00 0.00 0.00
+Disk usage:     5.8GiB out of 11.5GiB
+Memory usage:   462.3MiB out of 3.8GiB
+Mounts:         /Users/dalt/Git/avrell        => /home/ubuntu/avrell
+                    UID map: 501:default
+                    GID map: 20:default
+```
+
+### Problem #2: exposing the port
+
+Instead of `multipass shell` to such a VM, consider using a script we've prepared:
+
+```
+[host]$ host-tools/launch.sh 
+Usage:
+  $ PORT=3000,3123[,...] [MP_NAME=...] host-tools/launch.sh
+```
+
+Have a look at the script's code. The author suggests you copy it to your `npm` project's repo (consider it as a template).
+
+What it does is:
+
+- asks you to copy your Multipass key to `$HOME/.mp.key`, so user space ssh commands between the host and the VM become possible
+- launches `ssh` processes to proxy the designated ports, from VM to your host
+
+	This means when the VM shows `http://localhost:3000` on its console, clicking such a URL will actually work on your host.
+	
+	>[!HINT]
+	>On macOS, you can Cmd-double-click any URL in a terminal window, to open it. :)
+
+- launches `multipass shell` to your VM
+- cleans away the port forwarding when you exit
+
+This is needed because Multipass, on its own, does not provide port forwarding. Hope it helps.
+
+>[!NOTE]
+>This is just a convenience measure. If you are fine using the longer URLs (e.g. `192.168.64.219:3000`) and don't need `localhost` port mapping, you can just ignore all this and `multipass shell` as usual.
+
+<p />
+
+>**Installing cloud vendor tools (optional)**
+>
+>Cloud vendor CLI's (command line tools) require authentication. You can do that by setting API tokens (author's favourite), or by signing in to the vendor's web site, from the command line. The official instructions often show the latter route, which expects certain `localhost` ports to be available in your browser.
+
+
+### Problem #3: Hot Module Reload
+
+Not really a problem. :)
+
+Just mentioning that the `CHOKIDAR_USEPOLL` env.var. is defined, within the VM. This is needed for hot-module-reloading to work over network (read: Multipass) mounts. It affects any frameworks built on top of Chokidar (e.g. Vite, and therefore SvelteKit).
+
+Without Hot Module Reload, you need to press "refresh" in the browser, after making changes to your project. With it, the browser can refresh itself.
+
+When using this Multipass setup, you should expect Hot Module Reload (HMR) to just work.
+
+
+## Steps (...continued, again)
+
+```
+[host]$ PORT=3000 host-tools/launch.sh
+```
+
+```
+$ cd {project folder}
 $ mount node_modules
-$ mount .svelte-kit
+$ mount .svelte-kit    # if using SvelteKit
 ```
 
-That's it!  Your `npm` development now works in near-native speed, but within a VM.
+```
+$ npm install
+```
+
+```
+$ npm run dev
+[...]
+
+  ROLLDOWN-VITE v7.1.13  ready in 4197 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: http://192.168.64.219:3000/
+  ➜  press h + enter to show help
+
+```
+
+✅ This should only take some seconds (see the `4197 ms`, above).
+
+✅ Cmd-double-clicking (on a Mac) the `http://localhost:3000` should work.
+
+✅ Making changes to your web site's sources should refresh the host-side browser (HMR works).
 
 
-## Using: Exposing the port
+---
 
-To have the VM expose its port to outside world (not only its internal `localhost`):
+Next, you can **deploy** your web project somewhere. For a sample of the steps involved, check the `+wrangler/` subfolder.
 
-1. Add something like this:
-
-   ```
-   // vite.config.js
-   export default defineConfig({
-      server: {
-         host: "0.0.0.0"
-      },
-   ```
-
-2. Get the VM's IP e.g. from `multipass info npm`. <sup>`|*|`</sup>
-
-   e.g. `192.168.64.85`
-
-You can now open the port in host browser.
-
-<small>`|*|`: It stays the same for each launch, but varies over separate launches.</small>
-
-
-### Alternatively, forward `localhost`
-
-An alternative (or: parallel) approach is forwarding the VM's `localhost` to the host. Multipass doesn't have built-in port forwarding (Jun'25) and this requires you to keep a terminal open. See [`tools/port-fwd.sh`](./tools/port-fwd.sh) for ideas...
-
-
-## Using: Installing distribution tools
-
-Cloud vendor CLI's require authentication, and they often involve hooks (from the browser) back to `localhost`. For this to work, you must first proxy the particular port as suggested above. 
-
-Also, there's a sample for `wrangler`, Cloudflare's CLI, within this repo.
-
+---
 
 ## Maintenance 
 
-**Updating (within the sandbox)**
+**Updating (within the VM)**
    
 ```
 $ npm install -g npm
@@ -164,8 +244,12 @@ Run this occasionally. Keep an eye on your disk space consumption (8GB should be
 
 Observed savings:
 
-- 4.3GB -> 3.7GB (0.6GB)
-- 8.2GB -> 6.2GB (2.0GB)
+|was -> after `verify`|reclaimed|
+|---|---|
+|4.3 GB -> 3.7 GB|0.6 GB|
+|8.2 GB -> 6.2 GB|2.0 GB|
 
+<!-- #hidden
 >Use `multipass info npm` (on the host) to see the available and used disk space.
+-->
 

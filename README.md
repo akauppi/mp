@@ -20,7 +20,7 @@ Scripts for setting up [Multipass](https://multipass.run) virtual machines.
 
 World is a risky place. Sandboxing allows you to separate *business account* (emails etc.) from *developer account* (that pulls in stuff from third party sources on the Internet), without disturbing the workflow, too much.
 
-One can use containers for development, but Docker Desktop feels too big, for this author. And they've become greedy.
+One can use containers for development, but Docker Desktop feels too bloated, for this author.
 
 **Discipline**
 
@@ -52,25 +52,28 @@ Sandboxing of course needs discipline. The `mp` approach is done so that:
 
 - Latest Multipass installed
 
-The system is intended to work on all macOS, Linux and Windows hosts, but is only tested on macOS. If you find issues, please create an issue!
+The system is intended to work on all macOS, Linux and Windows hosts, but is only tested on macOS. If you find issues, please create one!
 
 >Note: For Windows, Pro versions of the OS are recommended since only they provide Hyper-V (native) virtualization.
 
 <!-- Developed with:
-- macOS 15.5
-- Multipass 1.15.1
+- macOS 15.7
+- Multipass 1.16.1
 -->
 
 ## Usage
-
-*tbd. This is intended to change, due to the composable approach*
 
 ```
 $ rust/prep.sh
 [...]
 ```
 
->It works the same for `npm/prep.sh`.
+> - `rust/+emb/prep.sh`
+> - `npm/prep.sh`
+
+<p />
+
+Do read the `README` in the particular recipe's subfolder: they may have vital extra information that complements this!
 
 ```
 Multipass IP (rust): 192.168.64.74
@@ -89,6 +92,9 @@ $ multipass mount --type native {path-to-folder} rust-emb:
 $ multipass start rust-emb
 ```
 
+>[!HINT]
+>See below, how you can automatically recreate mounts by adding a `custom.mounts.list` file.
+
 Then:
 
 ```
@@ -97,9 +103,9 @@ $ multipass shell rust-emb
 
 You are now in an Ubuntu sandbox.
 
-> [!WARN]
+> [!NOTE]
 > 
-> Multipass (on Mac) has had stability difficulties with mounts, since 1.13. This is why the scripts - and the instructions above - stop a VM before changing its things.
+> We'd like to use `rust+emb` as the VM name, but Multipass doesn't allow `+`.
 
 
 ## Hints
@@ -128,9 +134,46 @@ Multipass does not provide USB pass-through. There are ways around this, however
 Also, some development tools have native remote protocols ([`probe-rs`](https://probe.rs)).
 -->
 
-## Troubleshooting
+### Custom VM setup
 
----
+The `rust/+emb`, `npm` VM setups support files for setting one's environment variables, and/or folder mapping. The intention is that this makes it easier for you to re-create such environments from scratch.
+
+
+### `custom.env`
+
+Example:
+
+```
+# a comment
+CLOUDFLARE_API_TOKEN=...
+```
+
+### `custom.mounts.list`
+
+Example:
+
+```
+~/Git/website
+```
+
+You may use `~` for the host's home. The folders will be mapped to the VM home (`/home/ubuntu/`). If you want other targets, mount them manually - or edit the prep scripts to extend the syntax.
+
+
+### Always stop the VM..
+
+The issues in "troubleshooting" (below) came about when the author tried to do some state-changing commands on running (not stopped) VM's. Don't.
+
+**Multipass (versions past 1.13) is very fragile in this regard.** Stop VM's before:
+
+- restarting your host computer (YES!!)
+- updating Multipass itself
+- changing any mounts, or VM parameters: CPU count, memory, disk size
+- deleting a VM
+
+Stopping a VM explicitly seems to keep things running more smoothly. If you end up in a problem, don't fret: part of the `mp` approach's point is to be able to re-build development accounts easily and with least manual tuning.
+
+
+## Troubleshooting
 
 If you get:
 

@@ -18,10 +18,13 @@ XTENSA=${XTENSA:-0}
 MP_NAME=${MP_NAME:-rust-emb}
   # Note. '+' or '_' are NOT allowed in Multipass names (1.13; 1.14)
 
-MP_PARAMS=${MP_PARAMS:---memory 6G --disk 15G --cpus 3}
+MP_PARAMS=${MP_PARAMS:---memory 6G --disk 18G --cpus 3}
   #
-  # Note: May be more than the base 'rust' VM would use; especially disk space.
-	#   Doing actual development (e.g. Embassy) has shown ~10GB to fall short.
+  # Note: You'll get started with 10G of disk, but adding a couple of (embedded) targets, nightly, etc. easily
+  #     reaches beyond. WHILE you can clean that up ('cargo clean'), the author rather just have the added head space.
+  #
+  # Data:
+  #     Doing actual development (e.g. Embassy) has shown ~10GB to fall short.
 
 # Wasn't able to do interactive prompt on macOS (bash 3.2), but.. this should be fine.
 PROBE_RS_REMOTE=${PROBE_RS_REMOTE:-probe-rs@192.168.1.199}
