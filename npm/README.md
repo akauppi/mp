@@ -93,7 +93,7 @@ The `.svelte-kit` folder is mounted to a memory disk. Its contents don't need to
 
 ```
 /home/ubuntu/.cache/node_modules/averell /home/ubuntu/averell/node_modules none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
-sk-averell /home/ubuntu/averell/.svelte-kit tmpfs user,noauto,rw,noatime,nodiratime,size=5120k,uid=1000,gid=1000,inode64 0 0
+sk-averell /home/ubuntu/averell/.svelte-kit tmpfs user,noauto,rw,size=5120k,uid=1000,gid=1000 0 0
 ```
 
 - `user`: allows you to mount these from user space, without `sudo`

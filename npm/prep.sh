@@ -154,7 +154,7 @@ if [ -f $CUSTOM_MOUNTS ]; then
   #
   # <<
   #   /home/ubuntu/.node_modules/ZOO_BLE_webapp /home/ubuntu/ZOO-BLE-webapp/node_modules none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
-  #   abc5435435 /home/ubuntu/ZOO-BLE-webapp/.svelte-kit tmpfs user,noauto,rw,noatime,nodiratime,size=5120k,uid=1000,gid=1000,inode64 0 0
+  #   abc5435435 /home/ubuntu/ZOO-BLE-webapp/.svelte-kit tmpfs user,noauto,rw,size=5120k,uid=1000,gid=1000 0 0
   # <<
   #
   _TMP_FILE = .fstab.tmp
@@ -172,7 +172,7 @@ if [ -f $CUSTOM_MOUNTS ]; then
 
         echo >> $_TMP_FILE "
 /home/ubuntu/${_CACHE_NODE_MODULES:~/=}/${_X} /home/ubuntu/${_X}/node_modules none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
-sk${_RANDOM} /home/ubuntu/${_X}/.svelte-kit tmpfs user,noauto,rw,noatime,nodiratime,size=5120k,uid=1000,gid=1000,inode64 0 0
+sk${_RANDOM} /home/ubuntu/${_X}/.svelte-kit tmpfs user,noauto,rw,size=5120k,uid=1000,gid=1000 0 0
 "
       done
 
