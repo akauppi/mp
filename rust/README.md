@@ -25,6 +25,7 @@ $ rustup completions bash cargo > ~/.local/share/bash-completion/completions/car
 Cleanup (reclaim disk space):
 
 ```
+# cd to any Rust project folder (one with `cargo.toml`)
 $ cargo clean
 ```
 
@@ -33,7 +34,7 @@ $ cargo clean
 ## More cleanup (optional)
 
 ```
-$ du -h -d 1 ~/.cargo
+$ du -h -d1 ~/.cargo
  73M	xxx/.cargo/bin
 1,1G	xxx/.cargo/registry
 2,8G	xxx/.cargo/git
@@ -50,10 +51,17 @@ However, since they don't get properly garbage collected <sup>`|1|`</sup>, they 
 `1`: ["Cargo cache cleaning"](https://blog.rust-lang.org/2023/12/11/cargo-cache-cleaning/) (blog; Dec'23); about the `cargo clean gc`
 </small>
 
+You can `rm -rf` any or all of the above folders, but there are more refined solutions coming up:
 
-### Option a) `cargo cache`
+### a) `cargo cache` extension
 
-Looks like a nice utility. You have to separately install it by `cargo install cargo-cache`.
+Install it separately:
+
+```
+$ cargo install cargo-cache
+```
+
+Allows you to see the space (well, `du -f -d1` isn't much different):
 
 ```
 $ cargo cache -a
@@ -74,11 +82,9 @@ Total:                                    1.08 GB => 552.58 MB
 Size changed 1.08 GB => 552.58 MB (-529.24 MB, -48.92%)
 ```
 
-The author likes the clear reporting.
+### b) `cargo +nightly clean gc`
 
-### Option b) `cargo +nightly clean gc`
-
-This would - hopefully - become the automatic solution for keeping `~/.cargo` slim. Until that day, you can run it as:
+This will hopefully become the automatic solution for keeping `~/.cargo` slim. Until that day, you can run it as:
 
 ```
 $ cargo +nightly clean gc -Z gc

@@ -30,11 +30,6 @@ MP_PARAMS=${MP_PARAMS:---memory 6G --disk 18G --cpus 3}
 # Wasn't able to do interactive prompt on macOS (bash 3.2), but.. this should be fine.
 PROBE_RS_REMOTE=${PROBE_RS_REMOTE:-probe-rs@192.168.1.199}
 
-# 'USE_ORIGINAL_MOUNT' is SO UNSTABLE (once the VM is up, e.g. 'multipass stop' might not work) that it's worth
-# considering banning it completely. // 8-Jan-25; Multipass 1.15.0
-#
-USE_ORIGINAL_MOUNT=0
-
 CUSTOM_ENV=$MY_PATH/custom.env
 CUSTOM_MOUNTS=$MY_PATH/custom.mounts.list
 
@@ -56,18 +51,16 @@ CUSTOM_MOUNTS=$MY_PATH/custom.mounts.list
 
 # Build the foundation
 #
-MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS SKIP_SUMMARY=1 USE_ORIGINAL_MOUNT=${USE_ORIGINAL_MOUNT} \
+MP_NAME="$MP_NAME" MP_PARAMS=$MP_PARAMS SKIP_SUMMARY=1 \
   ${MY_PATH}/../prep.sh
 
 # Mount our 'linux' folder
 #
-if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
-  multipass mount ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
-else
-  multipass stop $MP_NAME
-  multipass mount --type=native ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
-  multipass start $MP_NAME
-fi
+# tbd. copy things to the VM, not needing the stop-mount-start delay
+#
+multipass stop $MP_NAME
+multipass mount --type=native ${MY_PATH}/linux $MP_NAME:/home/ubuntu/.mp2
+multipass start $MP_NAME
 
 # Create '~/bin' and add to PATH (for some/any scripts to use it)
 #
@@ -87,13 +80,8 @@ if [ -f ./linux/custom.sh ]; then
   multipass exec $MP_NAME -- sh -c ". ~/.mp2/custom.sh"
 fi
 
-if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
-  multipass umount $MP_NAME
-  multipass stop $MP_NAME
-else
-  multipass stop $MP_NAME
-  multipass umount $MP_NAME
-fi
+multipass stop $MP_NAME
+multipass umount $MP_NAME
 
 # Append env.vars in 'custom.env' (.env syntax) to '˙~/.bashrc'.
 #

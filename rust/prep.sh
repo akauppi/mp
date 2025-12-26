@@ -5,7 +5,7 @@ set -e
 # Creates a Multipass VM, to be used for Rust development.
 #
 # Usage:
-#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] [USE_ORIGINAL_MOUNT=1] rust/prep.sh
+#   $ [MP_NAME=xxx] [MP_PARAMS=...] [SKIP_SUMMARY=1] rust/prep.sh
 #
 # Requires:
 #   - multipass
@@ -15,20 +15,21 @@ MY_PATH=$(dirname $0)
 # Provide defaults
 #
 MP_NAME=${MP_NAME:-rust}
-MP_PARAMS=${MP_PARAMS:---memory 6G --disk 10G --cpus 2}
+MP_PARAMS=${MP_PARAMS:---memory 6G --disk 10G --cpus 3}
   #
-	# Disk:	3.5GB seems to be needed for Rust installation.
-	#   However.. doing actual development (e.g. Embassy) has shown ~10GB to fall short.
-	#   Equally, if you were to use RustRover remote development, PLENTY of additional disk space is needed.
+	# Disk:	2.5GB used after installation.
+	#   However.. doing actual development has shown 10GB to fall short (tbd. non-embedded examples..?).
+	#   If you were to use RustRover remote development, PLENTY of additional disk space is needed. (just... DON'T DO IT)
 	#		Must be in increments of 512M
-	#
-	# Hint: Use 'multipass info' on the host to observe actual usage.
-	#     RustRover also has a stats display in its remote development UI.
 
-USE_ORIGINAL_MOUNT=${USE_ORIGINAL_MOUNT:-0}
-
-# DISABLED
-#|CUSTOM_MOUNTS=${CUSTOM_MOUNTS:-$MY_PATH/custom.mounts.list}   # 0|{path}
+if [ "${SKIP_SUMMARY}" != 1 ]; then
+  CUSTOM_ENV=$MY_PATH/custom.env
+  CUSTOM_MOUNTS=$MY_PATH/custom.mounts.list
+else
+  # Called from 'rust-emb' - let it set up the custom env + mounts
+  CUSTOM_ENV=
+  CUSTOM_MOUNTS=
+fi
 
 # If the VM is already running, decline to create. Helps us keep things simple: all initialization ever runs just once
 # (automatically).
@@ -48,13 +49,9 @@ USE_ORIGINAL_MOUNT=${USE_ORIGINAL_MOUNT:-0}
 
 # Launch and prime
 #
-if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
-  multipass launch lts --name $MP_NAME $MP_PARAMS --mount ${MY_PATH}/linux:/home/ubuntu/.mp
-else
-  multipass launch lts --name $MP_NAME $MP_PARAMS
-  multipass stop $MP_NAME
-  multipass mount --type=native ${MY_PATH}/linux ${MP_NAME}:/home/ubuntu/.mp
-fi
+multipass launch lts --name $MP_NAME $MP_PARAMS
+multipass stop $MP_NAME
+multipass mount --type=native ${MY_PATH}/linux ${MP_NAME}:/home/ubuntu/.mp
 
 multipass exec $MP_NAME -- sudo sh -c "apt update && DEBIAN_FRONTEND=noninteractive apt -y upgrade"
 
@@ -66,26 +63,33 @@ multipass exec $MP_NAME -- sh -c ". .cargo/env && . ~/.mp/rustfmt.sh"
 multipass exec $MP_NAME -- sh -c ". ~/.mp/shared-target.sh"
 
 # We don't need the VM-side scripts any more; leave stopped.
-if [ "${USE_ORIGINAL_MOUNT}" == "1" ]; then
-  multipass umount $MP_NAME
-  multipass stop $MP_NAME
-else
-  multipass stop $MP_NAME
-  multipass umount $MP_NAME
+multipass stop $MP_NAME
+multipass umount $MP_NAME
+
+# Append env.vars in 'custom.env' (.env syntax) to '˙~/.bashrc'.
+#
+# Note: Code expects no spaces in the key or value
+#
+# tbd. Could gather the keys together, and concatenate as a single operation (perhaps shipping the tail over as a file).
+#
+if [[ -f $CUSTOM_ENV ]]; then
+  multipass exec $MP_NAME -- bash -c "echo -e '\n# From \x27$(basename $CUSTOM_ENV)\x27:' >> ~/.bashrc"
+
+  cat $CUSTOM_ENV | grep -v "^#" | \
+    xargs -I LINE multipass exec $MP_NAME -- sh -c "echo export LINE >> ~/.bashrc"
 fi
 
-# DISABLED; use 'rust/+{desktop|emb}'
-#|# Custom mounts, as
-#|# <<
-#|#   # can have comments
-#|#   ~/some/path
-#|#   ...
-#|# <<
-#|if [[ "$CUSTOM_MOUNTS" != "0" ]] && [[ -f $CUSTOM_MOUNTS ]]; then
-#|  multipass stop $MP_NAME
-#|  cat $CUSTOM_MOUNTS | grep -v "^#" | sed "s!^~!$HOME!" | \
-#|    xargs -I X multipass mount --type=native X $MP_NAME:
-#|fi
+# Custom mounts, as
+# <<
+#   # can have comments
+#   ~/some/path
+#   ...
+# <<
+if [[ -f $CUSTOM_MOUNTS ]]; then
+  multipass stop $MP_NAME
+  cat $CUSTOM_MOUNTS | grep -v "^#" | sed "s!^~!$HOME!" | \
+    xargs -I X multipass mount --type=native X $MP_NAME:
+fi
 
 multipass start $MP_NAME
 
@@ -98,7 +102,7 @@ fi
 
 # Test and show the versions
 multipass exec $MP_NAME -- sh -c ". .cargo/env && cargo --version && rustc --version"
-  # cargo 1.85.0 (d73d2caf9 2024-12-31)
-  # rustc 1.85.0 (4d91de4e4 2025-02-17)
+  # cargo 1.92.0 (344c4567c 2025-10-21)
+  # rustc 1.92.0 (ded5c06cf 2025-12-08)
 
 echo ""
