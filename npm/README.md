@@ -83,6 +83,7 @@ For these folders, we automatically add lines in the `/etc/fstab` file (VM), all
 $ cd averell
 $ mount node_modules
 $ mount .svelte-kit		# if you were to have a SvelteKit project
+$ mount build				# matters for 'npm run dev' speed
 ```
 
 See the contents of `/etc/fstab` if you wish to know the details. Also, if you mount project folders later, manually, copy the entries so your new folders can do the mounts.
@@ -93,18 +94,21 @@ The `.svelte-kit` folder is mounted to a memory disk. Its contents don't need to
 
 ```
 /home/ubuntu/.cache/node_modules/averell /home/ubuntu/averell/node_modules none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
+/home/ubuntu/.cache/build/averell /home/ubuntu/averell/build none user,bind,noauto,exec,rw,noatime,nodiratime 0 0
 sk-averell /home/ubuntu/averell/.svelte-kit tmpfs user,noauto,rw,size=5120k,uid=1000,gid=1000 0 0
 ```
 
 - `user`: allows you to mount these from user space, without `sudo`
-- `noauto`: important so that the mounts won't happen in Linux startup. You cannot do the mounts e.g. in `~/.bashrc` since Multipass adds its mounts only after that.
+- `noauto`: important so that the mounts won't happen in Linux startup. 
+
+	You cannot do the mounts e.g. in `~/.bashrc` since Multipass adds its mounts only after that.
 - `exec`: allows `npm` commands to be executed; crucial
 </details>
 
 
 That's it! 
 
-The mounting is valid as long as your VM runs. If you need to restart it, you will need to redo the mounts. This is a good reason to add them in your `~/.bashrc`.
+The mounts are valid as long as your VM runs. If you need to restart it, you will need to redo the mounts. This is a good reason to add them in your `~/.bashrc`.
 
 HOWEVER, just adding `mount` will cause multiple mounts. There's a script in `~/bin/mp-prime.sh` for this purpose. Given a folder name, it checks whether there's already a mount and mounts only if not. Use it if you wish to have the mounts always be enforced by `~/.bashrc`.
 

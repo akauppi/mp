@@ -21,10 +21,11 @@ MP_NAME=${MP_NAME:-rust-emb}
 MP_PARAMS=${MP_PARAMS:---memory 6G --disk 18G --cpus 3}
   #
   # Note: You'll get started with 10G of disk, but adding a couple of (embedded) targets, nightly, etc. easily
-  #     reaches beyond. WHILE you can clean that up ('cargo clean'), the author rather just have the added head space.
+  #     reaches beyond. Needing 'bindgen' and 'clang' might require 25GB.
   #
-  # Data:
-  #     Doing actual development (e.g. Embassy) has shown ~10GB to fall short.
+  # Data points:
+  #     - Doing actual development (e.g. Embassy) has shown ~10GB to fall short.
+  #     - With 'nrf-sdc' (bindgen, clang, ...) 18GB was too short.
 
 # Wasn't able to do interactive prompt on macOS (bash 3.2), but.. this should be fine.
 PROBE_RS_REMOTE=${PROBE_RS_REMOTE:-probe-rs@192.168.1.199}
