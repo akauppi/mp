@@ -10,6 +10,9 @@
 
 >Note: [Replace on MacOS QEMU by Apple VZ](https://github.com/canonical/multipass/issues/3760) may be related? (also below)
 
+<p />
+
+>Could also be connected with ["Spotlight indexing causes performance issues"](https://github.com/canonical/multipass/issues/4585).
 
 ## Allow Apple virtualization to be used as a driver `#multipass`
 
