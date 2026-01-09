@@ -5,6 +5,12 @@ Provides:
 - `node` (latest even [current version](https://nodejs.org/en/about/previous-releases#release-schedule))
 - `npm`
 
+Host side tools:
+
+- `.mp.dive.sh`
+
+	A script to launch one's VM shell session with port fowarding.
+	
 
 ## Prepare: Host side setup (`security` note!)
 
@@ -83,7 +89,6 @@ For these folders, we automatically add lines in the `/etc/fstab` file (VM), all
 $ cd averell
 $ mount node_modules
 $ mount .svelte-kit		# if you were to have a SvelteKit project
-$ mount build				# matters for 'npm run dev' speed
 ```
 
 See the contents of `/etc/fstab` if you wish to know the details. Also, if you mount project folders later, manually, copy the entries so your new folders can do the mounts.
@@ -137,44 +142,7 @@ Mounts:         /Users/dalt/Git/avrell        => /home/ubuntu/avrell
                     GID map: 20:default
 ```
 
-### Problem #2: exposing the port
-
-Instead of `multipass shell` to such a VM, consider using a script we've prepared:
-
-```
-[host]$ host-tools/launch.sh 
-Usage:
-  $ PORT=3000,3123[,...] [MP_NAME=...] host-tools/launch.sh
-```
-
-Have a look at the script's code. The author suggests you copy it to your `npm` project's repo (consider it as a template).
-
-What it does is:
-
-- asks you to copy your Multipass key to `$HOME/.mp.key`, so user space ssh commands between the host and the VM become possible
-- launches `ssh` processes to proxy the designated ports, from VM to your host
-
-	This means when the VM shows `http://localhost:3000` on its console, clicking such a URL will actually work on your host.
-	
-	>[!HINT]
-	>On macOS, you can Cmd-double-click any URL in a terminal window, to open it. :)
-
-- launches `multipass shell` to your VM
-- cleans away the port forwarding when you exit
-
-This is needed because Multipass, on its own, does not provide port forwarding. Hope it helps.
-
->[!NOTE]
->This is just a convenience measure. If you are fine using the longer URLs (e.g. `192.168.64.219:3000`) and don't need `localhost` port mapping, you can just ignore all this and `multipass shell` as usual.
-
-<p />
-
->**Installing cloud vendor tools (optional)**
->
->Cloud vendor CLI's (command line tools) require authentication. You can do that by setting API tokens (author's favourite), or by signing in to the vendor's web site, from the command line. The official instructions often show the latter route, which expects certain `localhost` ports to be available in your browser.
-
-
-### Problem #3: Hot Module Reload
+### Problem #2: Hot Module Reload
 
 Not really a problem. :)
 
@@ -185,14 +153,41 @@ Without Hot Module Reload, you need to press "refresh" in the browser, after mak
 When using this Multipass setup, you should expect Hot Module Reload (HMR) to just work.
 
 
+### Problem #3: Exposing the port(s)
+
+Multipass does not do port forwards. If you run development within the VM, and the console asks you to open, say, `http://localhost:3000`, Cmd-double-clicking (macOS) such a link will not work. To have the *host* point to the VM's port, we need port forwarding.
+
+Instead of `multipass shell`, take it as a habit to launch your Multipass sessions with:
+
+```
+./.mp.dive.sh
+```
+
+Copy this file to your (`npm`) project's file system, and edit it so that the right ports are the defaults. Once set up, all you need to remember is to use it.
+
+>[!NOTE]
+>Do study the contents of the said shell script. It copies the private `ssh` key used by Multipass to a location where it can be accessed without `sudo` access rights. You should be aware of this arrangement, though it helps you get it started.
+
+<p />
+
+>**Installing cloud vendor tools (optional)**
+>
+>Cloud vendor CLI's (command line tools) require authentication. You can do that by setting API tokens (author's favourite), or by signing in to the vendor's web site, from the command line (e.g. `wrangler login`). If you use the latter, make sure that the (somewhat hidden) port used between the CLI and the browser (which runs in host) is forwarded, while you do the login dance.
+>
+>Or just... use API tokens and you can skip the nonsense.
+
+
 ## Steps (...continued, again)
 
 ```
-[host]$ PORT=3000 host-tools/launch.sh
+[host]$ PORT=3000 ./.mp.dive.sh
 ```
 
+Note that the command also tries to cd you to the project folder.
+
 ```
-$ cd {project folder}
+$ pwd	# {are you in the project folder?}
+
 $ mount node_modules
 $ mount .svelte-kit    # if using SvelteKit
 ```

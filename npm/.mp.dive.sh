@@ -4,17 +4,26 @@ set -e
 # Launch a Multipass VM so that port '$PORT' is forwarded to the host.
 #
 # Usage:
-#   $ PORT=3000,3123 host-tools/launch.sh
+#   $ [PORT=3000,3123] [MP_NAME=npm] ./.mp.dive.sh
 #
 # Notes:
 #   After updates of Multipass, the key may have changed. Just remove the `~/.mp.key` and recreate it (as the script
-#   instructs).   // tbd. detect the situation when the key is wrong???
+#   instructs).
+#
+# Todo:
+#   - detecting that the cached key has become stale, and giving suitable error message (instructions on how to
+#     re-copy the key - like we do if one doesn't exist).
 #
 # References:
 #   - "Specify private key in SSH as string" (SO) [1]
 #     -> https://stackoverflow.com/questions/12041688/specify-private-key-in-ssh-as-string
 #
 MP_NAME=${MP_NAME:-npm}
+PORT=${PORT:-3000,3123}
+
+_FOLDER=$(basename "$(dirname "$(realpath "$0")")")
+#echo ${_FOLDER}
+  # website.1
 
 _KEY=/var/root/Library/Application\ Support/multipassd/ssh-keys/id_rsa
 _LOCAL_KEY=$HOME/.mp.key
@@ -28,7 +37,7 @@ usage() {
 "
 }
 
-if [[ -z "$PORT" ]]; then
+if [[ -n "$@" ]]; then
   usage
   false
 fi
@@ -86,27 +95,8 @@ do
     # reversed order doesn't matter
 done
 
-# Note:
-#   -E: "Append debug logs to log_file instead of standard error". Without it, the console gets dumped with
-#       <<
-#         channel 3: open failed: connect failed: Connection refused
-#       <<
-#       ..once you stop the service (e.g. 'npm run dev') within the VM. We want the forward to pick up again, if there's
-#       anyone answering that port within VM. And doing this quietly!
-#
-ssh -ntt -i ${_LOCAL_KEY} -o StrictHostKeyChecking=accept-new -E /dev/null ${_PORT_PARAMS} ubuntu@${_MP_IP} > /dev/null &
-_PS_TO_KILL=$!
-  # The process now runs in the background, and we have its id.
-
-cleanup() {
-  kill ${_PS_TO_KILL}
-}
-
-#|cat <<EOL1
-#|*
-#|* Forwarding the port(s) '${PORT}' as 'localhost'. (ps id ${_PS_TO_KILL})
-#|*
-#|EOL1
-
-# Launch the Multipass shell
-multipass shell ${MP_NAME}
+# Launch the shell
+ssh -i ${_LOCAL_KEY} -t -q ubuntu@${_MP_IP} ${_PORT_PARAMS} "cd /home/ubuntu/${_FOLDER} && exec bash -i"
+  # -t: forces TTY (colors etc.)
+  # -q: quiet
+  # exec bash --login: Suggested by Copilot.
