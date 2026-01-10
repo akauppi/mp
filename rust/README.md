@@ -1,11 +1,33 @@
 # Rust development
 
-For normal Rust development. 
+For Rust development. 
    
 Has:
 
 - `rustc`
 - `cargo`
+
+<!-- #skip
+Flavours: 
+
+- Embedded: generally anything `no_std` where you'd work on MCU's (nRF5x, ESP32 etc.)
+- WASM: building for the browser
+-->
+
+This README contains the common features. For particular flavours, check out:
+
+- [`+emb`](./+emb/README.md); Rust in embedded
+- [`+wasm`](./+wasm/README.md); Rust in the browser
+
+
+## Build
+
+Launch with one of the flavours, e.g.
+
+```
+$ rust/+emb/prep.sh
+```
+
 
 ## Maintenance
 
@@ -31,7 +53,9 @@ $ cargo clean
 
 >Since all projects share the same `~/target` folder, it's enough to do this in any Cargo project folder. It clears for all.
 
-## More cleanup (optional)
+### Cleanup (optional)
+
+Especially important in the embedded toolchain. Dependencies can pile up here:
 
 ```
 $ du -h -d1 ~/.cargo
@@ -41,19 +65,9 @@ $ du -h -d1 ~/.cargo
 4,0G	xxx/.cargo
 ```
 
-Running `cargo clean` does not touch these. 
+Running `cargo clean` does not touch these. There are at least two ways to garbage-collect these (and you can always also `rm -rf` the whole folder.
 
-They contain valid caches of crates, including their uncompressed sources, and git repo checkouts you've used as dependencies.
-
-However, since they don't get properly garbage collected <sup>`|1|`</sup>, they may also carry unnecessary old stuff, or duplicates.
-
-<small>
-`1`: ["Cargo cache cleaning"](https://blog.rust-lang.org/2023/12/11/cargo-cache-cleaning/) (blog; Dec'23); about the `cargo clean gc`
-</small>
-
-You can `rm -rf` any or all of the above folders, but there are more refined solutions coming up:
-
-### a) `cargo cache` extension
+#### a. `cargo cache` extension
 
 Install it separately:
 
@@ -82,7 +96,7 @@ Total:                                    1.08 GB => 552.58 MB
 Size changed 1.08 GB => 552.58 MB (-529.24 MB, -48.92%)
 ```
 
-### b) `cargo +nightly clean gc`
+#### b. `cargo +nightly clean gc`
 
 This will hopefully become the automatic solution for keeping `~/.cargo` slim. Until that day, you can run it as:
 
@@ -90,4 +104,5 @@ This will hopefully become the automatic solution for keeping `~/.cargo` slim. U
 $ cargo +nightly clean gc -Z gc
 ```
 
-Note that you can use it, even if your projects are using `stable` Rust.
+>[! NOTE]
+>The command gc's dependencies both for `stable` and `nightly`, though running it is done on the night side.. 🌓
