@@ -146,11 +146,11 @@ Mounts:         /Users/dalt/Git/avrell        => /home/ubuntu/avrell
 
 Not really a problem. :)
 
-Just mentioning that the `CHOKIDAR_USEPOLL` env.var. is defined, within the VM. This is needed for hot-module-reloading to work over network (read: Multipass) mounts. It affects any frameworks built on top of Chokidar (e.g. Vite, and therefore SvelteKit).
+Just mentioning that the `CHOKIDAR_USEPOLL` and `CHOKIDAR_INTERVAL` env.vars are defined, within the VM. They are needed for hot-module-reloading to work over network (read: Multipass) mounts. Rolldown (and thus Vite, SvelteKit) uses Chokidar to track changes to the file system.
 
 Without Hot Module Reload, you need to press "refresh" in the browser, after making changes to your project. With it, the browser can refresh itself.
 
-When using this Multipass setup, you should expect Hot Module Reload (HMR) to just work.
+When using this Multipass setup, you should expect Hot Module Reload (HMR) to just work (with only a slight consumption of CPU, ~10..20%).
 
 
 ### Problem #3: Exposing the port(s)

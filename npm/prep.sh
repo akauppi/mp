@@ -107,6 +107,11 @@ append_bashrc() {
   LINE="export CHOKIDAR_USEPOLLING=1"
   multipass exec $MP_NAME -- sh -c "echo '$LINE' >> ~/.bashrc"
 
+  # ..also this is needed: default (100ms) is *too frequent* for the author, causing his VM (3 cores) to be mostly just
+  # checking for changes ('top' gives ~70% to MainThread, but that's just the peak). Reducing the interval fixed it.
+  LINE="export CHOKIDAR_INTERVAL=500"
+  multipass exec $MP_NAME -- sh -c "echo '$LINE' >> ~/.bashrc"
+
   if [ -f $CUSTOM_BASHRC ]; then
     multipass exec $MP_NAME -- bash -c "echo -e '\n# From \x27$(basename $CUSTOM_BASHRC)\x27:' >> ~/.bashrc"
 
